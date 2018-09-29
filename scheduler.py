@@ -1,19 +1,30 @@
+'''A class to calculate optimal times for satellite spotting
+Initial skeleton code written by Robert Merkel for FIT2107 Assignment 3
+'''
+
 from skyfield.api import Loader
 import datetime, time
 from datetime import datetime
 
 class IllegalArgumentException(Exception):
+    '''An exception to throw if somebody provides invalid data to the Scheduler methods'''
     pass
 
 class Scheduler:
+    '''The class for calculating optimal satellite spotting times.  You can and should add methods
+    to this, but please don't change the parameter list for the existing methods.  '''
     def __init__(self):
+        '''Constructor sets things to put downloaded data in a sensible location. You can add
+        to this if you want.  '''
         self._skyload = Loader('~/.skyfield-data')
         self.ts = self._skyload.timescale()
 
 
     def find_time(self, satlist_url='http://celestrak.com/NORAD/elements/visual.txt',
     start_time=datetime.now(), n_windows=24, duration=60, sample_interval=1, cumulative=False):
-        '''arguments: satlist_url (string) a URL to a file containing a list of Earth-orbiting
+        '''NOTE: this is the key function that you'll need to implement for the assignment.  Please
+        don't change the arguments.
+        arguments: satlist_url (string) a URL to a file containing a list of Earth-orbiting
         satellites in TLE format)
                       start_time: a Python Datetime object representing the
                       the start of the potential observation windows,return

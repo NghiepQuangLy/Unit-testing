@@ -3,6 +3,9 @@ from scheduler import Scheduler
 from scheduler import IllegalArgumentException
 from datetime import datetime
 class SchedulerTest(unittest.TestCase):
+    '''Tests for the scheduler class.  Add more tests
+    to test the code that you write'''
+
     def setUp(self):
         self.scheduler = Scheduler()
 
