@@ -28,10 +28,8 @@ class Scheduler:
 
         returns:a tuple ( interval_start_time, satellite_list), where start_interval is
         the time interval from the set {(start_time, start_time + duration),
-        (start_time + duration, start_time + 2*duration)...} where either the
-        most satellites are visible at any one time (as checked at every interval)
-        minutes, or cumulatively the most unique satellites are visible over the duration (as unchecked
-        every interval minutes), and satellite_list is a list of strings containing the
-        names of satellites that contribute to the total/
+        (start_time + duration, start_time + 2*duration)...} with the most satellites visible at some
+        point in the interval, or the most cumulative satellites visible over the interval (if cumulative=True)
+        See the assignment spec sheet for more details.
         raises: IllegalArgumentException if an illegal argument is provided'''
         return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
