@@ -5,6 +5,7 @@ Initial skeleton code written by Robert Merkel for FIT2107 Assignment 3
 from skyfield.api import Topos, load
 import datetime, time
 from datetime import datetime
+from pytz import timezone
 
 class IllegalArgumentException(Exception):
     '''An exception to throw if somebody provides invalid data to the Scheduler methods'''
@@ -62,10 +63,13 @@ def convert_coords(lat,lon):
     return (str(abs(lat_float)) + lat_char, str(abs(lon_float)) + lon_char)
 
 def get_alt(satellite, time , lat, lon):
-    coords_NESW = convert_coords(lat, lon)
+    coords_NESW =SAconvert_coords(lat, lon)
     location = Topos(coords_NESW[0], coords_NESW[1])
     difference = satellite - location
-    topocentric = difference.at(time)
+    ts = load.timescale()
+    utc_t = ts.utc(time.astimezone(timezone('UTC')))
+    topocentric = difference.at(utc_t)
+    print(utc_t)
     alt, az, distance = topocentric.altaz()
 
     return alt
@@ -74,7 +78,8 @@ def get_alt(satellite, time , lat, lon):
 stations_url = 'http://celestrak.com/NORAD/elements/stations.txt'
 satellites = load.tle(stations_url)
 satellite = satellites['ISS (ZARYA)']
-ts = load.timescale()
-t = ts.utc(2018, 1, 20, 11, 18, 7)
+t = datetime.now()
+a = 2
 
 print(get_alt(satellite, t, -37.910496, 145.134021))
+
