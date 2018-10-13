@@ -50,22 +50,27 @@ class Scheduler:
 
         assert (type(duration) is int), "Duration must be an integer"
         assert (type(n_windows) is int), "The number of observation windows must be an integer"
+        assert (type(sample_interval) is int), "The sample interval must be an integer"
         assert (type(location[0]) is int or type(location[0]) is float), "Latitude has incorrect data type"
         assert (type(location[1]) is int or type(location[1]) is float), "Longitude has incorrect data type"
+        assert (type(cumulative) is bool), "Cumulative needs to be either True or False"
 
-        assert (duration > 0), "Duration in minutes must be positive"
-        assert (0 < n_windows < duration), "The number of observation windows must be a positive integer and is smaller" \
-                                           " than the duration"
+        assert (0 < duration), "Duration in minutes must be positive"
+        assert (0 < n_windows), "The number of observation windows must be a positive integer"
+        assert (0 < sample_interval < duration), "The sample interval must be positive and is smaller than the duration"
         assert (-90 <= location[0] <= 90), "Latitude must be between -90 and 90"
         assert (-180 <= location[1] <= 180), "Longitude must be between -180 and 180"
 
-        satellites = load.tle(satlist_url)
+        try:
+            satellites = load.tle(satlist_url)
+        except Exception as e:
+            print(e)
+            return
+
         timescale = load.timescale()
         current_time = timescale.now()
         observer_location = Topos(location[0], location[1])
         for satellite in satellites:
-            geocentric = satellites[satellite].at(current_time)
-
             topocentric = satellites[satellite] - observer_location
             topocentric = topocentric.at(current_time)
             print(satellite, topocentric.position.km)
