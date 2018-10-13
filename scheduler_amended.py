@@ -2,7 +2,7 @@
 Initial skeleton code written by Robert Merkel for FIT2107 Assignment 3
 '''
 
-from skyfield.api import Loader, Topos, load
+from skyfield.api import Loader
 import datetime, time
 from datetime import datetime
 
@@ -47,31 +47,4 @@ class Scheduler:
         point in the interval, or the most cumulative satellites visible over the interval (if cumulative=True)
         See the assignment spec sheet for more details.
         raises: IllegalArgumentException if an illegal argument is provided'''
-
-        assert (type(duration) is int), "Duration must be an integer"
-        assert (type(n_windows) is int), "The number of observation windows must be an integer"
-        assert (type(location[0]) is int or type(location[0]) is float), "Latitude has incorrect data type"
-        assert (type(location[1]) is int or type(location[1]) is float), "Longitude has incorrect data type"
-
-        assert (duration > 0), "Duration in minutes must be positive"
-        assert (0 < n_windows < duration), "The number of observation windows must be a positive integer and is smaller" \
-                                           " than the duration"
-        assert (-90 <= location[0] <= 90), "Latitude must be between -90 and 90"
-        assert (-180 <= location[1] <= 180), "Longitude must be between -180 and 180"
-
-        satellites = load.tle(satlist_url)
-        timescale = load.timescale()
-        current_time = timescale.now()
-        observer_location = Topos(location[0], location[1])
-        for satellite in satellites:
-            geocentric = satellites[satellite].at(current_time)
-
-            topocentric = satellites[satellite] - observer_location
-            topocentric = topocentric.at(current_time)
-            print(satellite, topocentric.position.km)
-        #https://rhodesmill.org/skyfield/earth-satellites.html  LOOK AT THIS FOR POSITION
-
-        #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
-
-a = Scheduler()
-a.find_time()
+        return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
