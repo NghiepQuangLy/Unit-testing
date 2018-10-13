@@ -70,13 +70,43 @@ class Scheduler:
         timescale = load.timescale()
         current_time = timescale.now()
         observer_location = Topos(location[0], location[1])
+
         for satellite in satellites:
-            topocentric = satellites[satellite] - observer_location
-            topocentric = topocentric.at(current_time)
-            print(satellite, topocentric.position.km)
+
+            satellite_name = satellite
+            satellite_location = satellites[satellite]
+
+            current_satellite = Satellite(satellite_name, satellite_location)
+
+            if current_satellite.is_visible(observer_location, current_time):
+                print(current_satellite.name)
+
         #https://rhodesmill.org/skyfield/earth-satellites.html  LOOK AT THIS FOR POSITION
 
         #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
+
+class Satellite:
+
+    def __init__(self, name, location):
+
+        self.name = name
+        self.location = location
+
+    def is_visible(self, observer_location, current_time):
+
+        result = False
+
+        location_difference = self.location - observer_location
+        location_difference = location_difference.at(current_time)
+
+        altitude, azimuth, distance = location_difference.altaz()
+
+        if altitude.degrees > 0:
+            result = True
+
+        return result
+
+
 
 a = Scheduler()
 a.find_time()
