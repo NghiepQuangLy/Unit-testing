@@ -71,22 +71,41 @@ class Scheduler:
         assert (-90 <= location[0] <= 90), "Latitude must be between -90 and 90"
         assert (-180 <= location[1] <= 180), "Longitude must be between -180 and 180"
 
-        try:
-            satellites = load.tle(satlist_url)
-        except Exception as e:
-            print(e)
-            return
-
         timescale = load.timescale()
 
         observer_location = Topos(location[0], location[1])
 
-        number_of_intervals = duration // sample_interval
+        # a list of Satellite objects
+        satellites_list = self.get_all_satellites(satlist_url)
 
-        visible_satellites_array = [None] * number_of_intervals
+        sub_intervals = duration // sample_interval
 
-        for interval in range(len(visible_satellites_array)):
-            visible_satellites_array[interval] = {}
+        visible_satellites_interval = [None] * sub_intervals
+
+        for sub_interval in range(sub_intervals):
+
+            time_of_measurement = timescale.utc(start_time + timedelta(minutes=sub_interval * sample_interval))
+
+            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
+                                                                                    time_of_measurement)
+
+            visible_satellites_interval[sub_interval] = visible_satellites_sub_interval
+
+            print('interval', sub_interval)
+            for thing in visible_satellites_sub_interval:
+                print(thing.name)
+
+        #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
+
+    def get_all_satellites(self, satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
+
+        try:
+            satellites = load.tle(satellite_list_url)
+        except Exception as e:
+            print(e)
+            raise IllegalArgumentException
+
+        satellites_list = []
 
         for satellite in satellites:
 
@@ -95,24 +114,43 @@ class Scheduler:
 
             current_satellite = Satellite(satellite_name, satellite_info)
 
-            for interval in range(len(visible_satellites_array)):
+            satellites_list.append(current_satellite)
 
-                time_of_measurement = timescale.utc(start_time + timedelta(minutes=interval * sample_interval))
+        return satellites_list
 
-                current_satellite_altitude = current_satellite.get_altitude(observer_location, time_of_measurement)
-                current_satellite_elevation = current_satellite_altitude.degrees
+    def find_visible_satellites_instance(self, satellites_list, observer_location, time_of_measurement):
 
-                # only visible satellites will have their names being keys inside the dictionary inside the array (data structure is an array of dictionaries)
-                if current_satellite.is_visible(current_satellite_elevation):
-                    visible_satellites_array[interval][satellite_name] = 1
+        visible_satellites = []
 
-        for i in range(len(visible_satellites_array)):
-            print('inteval', i)
-            for satellite in visible_satellites_array[i]:
-                print(satellite)
-        #https://rhodesmill.org/skyfield/earth-satellites.html  LOOK AT THIS FOR POSITION
+        for satellite in satellites_list:
 
-        #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
+            satellite_altitude = satellite.get_altitude(observer_location, time_of_measurement)
+            satellite_elevation = satellite_altitude.degrees
+
+            if satellite.is_visible(satellite_elevation):
+                visible_satellites.append(satellite)
+
+        return visible_satellites
+
+    """
+    def find_visible_satellites_period(self, timescale, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
+
+        number_of_intervals = interval_duration // sub_interval_duration
+
+        visible_satellites_interval = [None] * number_of_intervals
+
+        for interval in range(number_of_intervals):
+
+            time_of_measurement = timescale.utc(start_time + timedelta(minutes=interval * sub_interval_duration))
+
+            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
+                                                                           time_of_measurement)
+
+            visible_satellites_interval[interval] = visible_satellites_sub_interval
+
+        return visible_satellites_interval
+    """
+
 
 class Satellite:
 
@@ -121,10 +159,10 @@ class Satellite:
         self.name = name
         self.info = info
 
-    def get_altitude(self, observer_location, measurement_time):
+    def get_altitude(self, observer_location, time_of_measurement):
 
         location_difference = self.info - observer_location
-        location_difference = location_difference.at(measurement_time)
+        location_difference = location_difference.at(time_of_measurement)
 
         altitude, azimuth, distance = location_difference.altaz()
 
