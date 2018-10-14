@@ -78,9 +78,15 @@ class Scheduler:
             return
 
         timescale = load.timescale()
-        start_time = timescale.utc(start_time)
 
         observer_location = Topos(location[0], location[1])
+
+        number_of_intervals = duration // sample_interval
+
+        visible_satellites_array = [None] * number_of_intervals
+
+        for interval in range(len(visible_satellites_array)):
+            visible_satellites_array[interval] = {}
 
         for satellite in satellites:
 
@@ -89,12 +95,21 @@ class Scheduler:
 
             current_satellite = Satellite(satellite_name, satellite_info)
 
-            current_satellite_altitude = current_satellite.get_altitude(observer_location, start_time)
-            current_satellite_elevation = current_satellite_altitude.degrees
+            for interval in range(len(visible_satellites_array)):
 
-            if current_satellite.is_visible(current_satellite_elevation):
-                print(current_satellite.name)
+                time_of_measurement = timescale.utc(start_time + timedelta(minutes=interval * sample_interval))
 
+                current_satellite_altitude = current_satellite.get_altitude(observer_location, time_of_measurement)
+                current_satellite_elevation = current_satellite_altitude.degrees
+
+                # only visible satellites will have their names being keys inside the dictionary inside the array (data structure is an array of dictionaries)
+                if current_satellite.is_visible(current_satellite_elevation):
+                    visible_satellites_array[interval][satellite_name] = 1
+
+        for i in range(len(visible_satellites_array)):
+            print('inteval', i)
+            for satellite in visible_satellites_array[i]:
+                print(satellite)
         #https://rhodesmill.org/skyfield/earth-satellites.html  LOOK AT THIS FOR POSITION
 
         #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
@@ -106,10 +121,10 @@ class Satellite:
         self.name = name
         self.info = info
 
-    def get_altitude(self, observer_location, current_time):
+    def get_altitude(self, observer_location, measurement_time):
 
         location_difference = self.info - observer_location
-        location_difference = location_difference.at(current_time)
+        location_difference = location_difference.at(measurement_time)
 
         altitude, azimuth, distance = location_difference.altaz()
 
