@@ -4,7 +4,8 @@ Initial skeleton code written by Robert Merkel for FIT2107 Assignment 3
 
 from skyfield.api import Loader, Topos, load
 import datetime, time
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 
 class IllegalArgumentException(Exception):
     '''An exception to throw if somebody provides invalid data to the Scheduler methods'''
@@ -48,6 +49,15 @@ class Scheduler:
         See the assignment spec sheet for more details.
         raises: IllegalArgumentException if an illegal argument is provided'''
 
+        """
+        Dealing with naive start_time which is a datetime object with no timezone
+        """
+        timezone = pytz.timezone("UTC")
+        start_time = timezone.localize(start_time)
+        """
+        """
+
+        assert ((start_time.tzinfo is not None) and (str (start_time.tzinfo) == "UTC")), "Start time must be UTC time"
         assert (type(duration) is int), "Duration must be an integer"
         assert (type(n_windows) is int), "The number of observation windows must be an integer"
         assert (type(sample_interval) is int), "The sample interval must be an integer"
@@ -68,17 +78,21 @@ class Scheduler:
             return
 
         timescale = load.timescale()
-        current_time = timescale.now()
+        start_time = timescale.utc(start_time)
+
         observer_location = Topos(location[0], location[1])
 
         for satellite in satellites:
 
             satellite_name = satellite
-            satellite_location = satellites[satellite]
+            satellite_info = satellites[satellite_name]
 
-            current_satellite = Satellite(satellite_name, satellite_location)
+            current_satellite = Satellite(satellite_name, satellite_info)
 
-            if current_satellite.is_visible(observer_location, current_time):
+            current_satellite_altitude = current_satellite.get_altitude(observer_location, start_time)
+            current_satellite_elevation = current_satellite_altitude.degrees
+
+            if current_satellite.is_visible(current_satellite_elevation):
                 print(current_satellite.name)
 
         #https://rhodesmill.org/skyfield/earth-satellites.html  LOOK AT THIS FOR POSITION
@@ -87,25 +101,28 @@ class Scheduler:
 
 class Satellite:
 
-    def __init__(self, name, location):
+    def __init__(self, name, info):
 
         self.name = name
-        self.location = location
+        self.info = info
 
-    def is_visible(self, observer_location, current_time):
+    def get_altitude(self, observer_location, current_time):
 
-        result = False
-
-        location_difference = self.location - observer_location
+        location_difference = self.info - observer_location
         location_difference = location_difference.at(current_time)
 
         altitude, azimuth, distance = location_difference.altaz()
 
-        if altitude.degrees > 0:
+        return altitude
+
+    def is_visible(self, position_elevation):
+
+        result = False
+
+        if position_elevation > 0:
             result = True
 
         return result
-
 
 
 a = Scheduler()
