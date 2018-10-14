@@ -78,23 +78,16 @@ class Scheduler:
         # a list of Satellite objects
         satellites_list = self.get_all_satellites(satlist_url)
 
-        sub_intervals = duration // sample_interval
+        visible_satellites_interval = self.find_visible_satellites_interval(timescale, satellites_list,
+                                                                            observer_location, start_time, duration,
+                                                                            sample_interval)
 
-        visible_satellites_interval = [None] * sub_intervals
+        max_visible_satellites = self.find_max_number_visible_satellites_interval(visible_satellites_interval)
 
-        for sub_interval in range(sub_intervals):
-
-            time_of_measurement = timescale.utc(start_time + timedelta(minutes=sub_interval * sample_interval))
-
-            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
-                                                                                    time_of_measurement)
-
-            visible_satellites_interval[sub_interval] = visible_satellites_sub_interval
-
-            print('interval', sub_interval)
-            for thing in visible_satellites_sub_interval:
-                print(thing.name)
-
+        print('There are at maximum ', len(max_visible_satellites), 'visible satellites')
+        for vis_sat in max_visible_satellites:
+            print(vis_sat.name)
+        
         #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
 
     def get_all_satellites(self, satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
@@ -132,24 +125,42 @@ class Scheduler:
 
         return visible_satellites
 
-    """
-    def find_visible_satellites_period(self, timescale, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
 
-        number_of_intervals = interval_duration // sub_interval_duration
+    def find_visible_satellites_interval(self, timescale, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
 
-        visible_satellites_interval = [None] * number_of_intervals
+        number_of_sub_intervals = interval_duration // sub_interval_duration
 
-        for interval in range(number_of_intervals):
+        visible_satellites_interval = [None] * number_of_sub_intervals
 
-            time_of_measurement = timescale.utc(start_time + timedelta(minutes=interval * sub_interval_duration))
+        for sub_interval in range(number_of_sub_intervals):
+
+            time_of_measurement = timescale.utc(start_time + timedelta(minutes=sub_interval * sub_interval_duration))
 
             visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
-                                                                           time_of_measurement)
+                                                                                    time_of_measurement)
 
-            visible_satellites_interval[interval] = visible_satellites_sub_interval
+            visible_satellites_interval[sub_interval] = visible_satellites_sub_interval
 
         return visible_satellites_interval
-    """
+
+    def find_max_number_visible_satellites_interval(self, visible_satellites_interval):
+
+        # checking if visible_satellites_interval actually contains data or not; if not we just return empty array
+        if visible_satellites_interval:
+            max_number = 0
+            max_sub_interval = None
+            number_of_sub_intervals = len(visible_satellites_interval)
+
+            for sub_interval in range(number_of_sub_intervals):
+
+                number_of_visible_satellites_sub_interval = len(visible_satellites_interval[sub_interval])
+
+                if max_number < number_of_visible_satellites_sub_interval:
+                    max_number = number_of_visible_satellites_sub_interval
+                    max_sub_interval = sub_interval
+
+            return visible_satellites_interval[max_sub_interval]
+        return []
 
 
 class Satellite:
