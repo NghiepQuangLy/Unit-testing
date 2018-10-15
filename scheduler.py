@@ -71,23 +71,20 @@ class Scheduler:
         assert (-90 <= location[0] <= 90), "Latitude must be between -90 and 90"
         assert (-180 <= location[1] <= 180), "Longitude must be between -180 and 180"
 
-        timescale = load.timescale()
-
         observer_location = Topos(location[0], location[1])
 
         # a list of Satellite objects
         satellites_list = self.get_all_satellites(satlist_url)
 
-        visible_satellites_interval = self.find_visible_satellites_interval(timescale, satellites_list,
-                                                                            observer_location, start_time, duration,
-                                                                            sample_interval)
+        start_time_max_sub_interval, visible_satellites_max_sub_interval = self.find_max_visible_satellites_interval_non_cumulative(satellites_list, observer_location,
+                                                                                                                                    start_time, duration, sample_interval)
 
-        max_visible_satellites = self.find_max_number_visible_satellites_interval(visible_satellites_interval)
+        print('There are at maximum ', len(visible_satellites_max_sub_interval), 'visible satellites')
+        for visible_satellite in visible_satellites_max_sub_interval:
+            print(visible_satellite.name)
 
-        print('There are at maximum ', len(max_visible_satellites), 'visible satellites')
-        for vis_sat in max_visible_satellites:
-            print(vis_sat.name)
-        
+        print('the start time is ', start_time_max_sub_interval)
+
         #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
 
     def get_all_satellites(self, satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
@@ -113,7 +110,10 @@ class Scheduler:
 
     def find_visible_satellites_instance(self, satellites_list, observer_location, time_of_measurement):
 
+        # if the satellites list is empty then we return an empty array
         visible_satellites = []
+
+        # NOT SURE IF WE NEED TO TYPE CHECK EACH ELEMENT IN THE ARRAY TO SEE IF THEY ARE SATELLITE OBJECTS OR NOT
 
         for satellite in satellites_list:
 
@@ -125,42 +125,38 @@ class Scheduler:
 
         return visible_satellites
 
+    def find_max_visible_satellites_interval_non_cumulative(self, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
 
-    def find_visible_satellites_interval(self, timescale, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
+        if not satellites_list:
+            return None, []
+
+        for satellite in satellites_list:
+            if type(satellite) is not Satellite:
+                raise IllegalArgumentException
+
+        max_number_of_visible_satellites_sub_interval = 0
+
+        start_time_of_max_sub_interval = self.ts.utc(start_time)
 
         number_of_sub_intervals = interval_duration // sub_interval_duration
 
-        visible_satellites_interval = [None] * number_of_sub_intervals
+        visible_satellites_max_sub_interval = []
 
         for sub_interval in range(number_of_sub_intervals):
 
-            time_of_measurement = timescale.utc(start_time + timedelta(minutes=sub_interval * sub_interval_duration))
+            time_of_measurement = self.ts.utc(start_time + timedelta(minutes=sub_interval * sub_interval_duration))
 
             visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
                                                                                     time_of_measurement)
 
-            visible_satellites_interval[sub_interval] = visible_satellites_sub_interval
+            number_of_visible_satellites_sub_interval = len(visible_satellites_sub_interval)
 
-        return visible_satellites_interval
+            if max_number_of_visible_satellites_sub_interval < number_of_visible_satellites_sub_interval:
+                max_number_of_visible_satellites_sub_interval = number_of_visible_satellites_sub_interval
+                start_time_of_max_sub_interval = time_of_measurement
+                visible_satellites_max_sub_interval = visible_satellites_sub_interval
 
-    def find_max_number_visible_satellites_interval(self, visible_satellites_interval):
-
-        # checking if visible_satellites_interval actually contains data or not; if not we just return empty array
-        if visible_satellites_interval:
-            max_number = 0
-            max_sub_interval = None
-            number_of_sub_intervals = len(visible_satellites_interval)
-
-            for sub_interval in range(number_of_sub_intervals):
-
-                number_of_visible_satellites_sub_interval = len(visible_satellites_interval[sub_interval])
-
-                if max_number < number_of_visible_satellites_sub_interval:
-                    max_number = number_of_visible_satellites_sub_interval
-                    max_sub_interval = sub_interval
-
-            return visible_satellites_interval[max_sub_interval]
-        return []
+        return start_time_of_max_sub_interval, visible_satellites_max_sub_interval
 
 
 class Satellite:
