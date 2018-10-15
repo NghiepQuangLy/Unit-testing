@@ -2,18 +2,10 @@
 Initial skeleton code written by Robert Merkel for FIT2107 Assignment 3
 '''
 
-<<<<<<< HEAD
-from skyfield.api import Topos, load
-import datetime, time
-from datetime import datetime, timedelta
-from datetime import timezone as dttz
-from pytz import timezone
-=======
 from skyfield.api import Loader, Topos, load
 import datetime, time
 from datetime import datetime, timedelta
 import pytz
->>>>>>> fd5f1170ffd7da93ad74c8baede0f5339fe6ba27
 
 class IllegalArgumentException(Exception):
     '''An exception to throw if somebody provides invalid data to the Scheduler methods'''
