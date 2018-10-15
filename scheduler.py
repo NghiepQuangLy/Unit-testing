@@ -57,23 +57,46 @@ class Scheduler:
         """
         """
 
-        assert ((start_time.tzinfo is not None) and (str (start_time.tzinfo) == "UTC")), "Start time must be UTC time"
-        assert (type(duration) is int), "Duration must be an integer"
-        assert (type(n_windows) is int), "The number of observation windows must be an integer"
-        assert (type(sample_interval) is int), "The sample interval must be an integer"
-        assert (type(location[0]) is int or type(location[0]) is float), "Latitude has incorrect data type"
-        assert (type(location[1]) is int or type(location[1]) is float), "Longitude has incorrect data type"
-        assert (type(cumulative) is bool), "Cumulative needs to be either True or False"
+        if (start_time.tzinfo is None) or (str (start_time.tzinfo) != "UTC"):
+            raise IllegalArgumentException
 
-        assert (0 < duration), "Duration in minutes must be positive"
-        assert (0 < n_windows), "The number of observation windows must be a positive integer"
-        assert (0 < sample_interval < duration), "The sample interval must be positive and is smaller than the duration"
-        assert (-90 <= location[0] <= 90), "Latitude must be between -90 and 90"
-        assert (-180 <= location[1] <= 180), "Longitude must be between -180 and 180"
+        if type(duration) is not int:
+            raise IllegalArgumentException
+
+        if type(n_windows) is not int:
+            raise IllegalArgumentException
+
+        if type(sample_interval) is not int:
+            raise IllegalArgumentException
+
+        if type(location[0]) is not int and type(location[0]) is not float:
+            raise IllegalArgumentException
+
+        if type(location[1]) is not int and type(location[1]) is not float:
+            raise IllegalArgumentException
+
+        if type(cumulative) is not bool:
+            raise IllegalArgumentException
+
+        if duration <= 0:
+            raise IllegalArgumentException
+
+        if n_windows <= 0:
+            raise IllegalArgumentException
+
+        if (sample_interval <= 0) or (sample_interval > duration):
+            raise IllegalArgumentException
+
+        if (location[0] < -90) or (location[0] > 90):
+            raise IllegalArgumentException
+
+        if (location[1] < -180) or (location[1] > 180):
+            raise IllegalArgumentException
 
         observer_location = Topos(location[0], location[1])
 
-        # a list of Satellite objects
+        # a list of unique Satellite objects
+        # they are unique by name, some satellites with the same name but different ids are not considered
         satellites_list = self.get_all_satellites(satlist_url)
 
         start_time_max_sub_interval, visible_satellites_max_sub_interval = self.find_max_visible_satellites_interval_non_cumulative(satellites_list, observer_location,
@@ -85,30 +108,45 @@ class Scheduler:
 
         print('the start time is ', start_time_max_sub_interval)
 
+        start_time_interval, visible_satellites_interval = self.find_max_visible_satellites_interval_cumulative(satellites_list, observer_location, start_time,
+                                                                                                                duration, sample_interval)
+
+        print('we have ', len(visible_satellites_interval), 'visible satellites in this interval and they are')
+        for visible_satellite in visible_satellites_interval:
+            print(visible_satellite.name)
+        print('time of interval is ', start_time_interval)
+        print('we have in total ', len(satellites_list))
+
         #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
 
     def get_all_satellites(self, satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
 
         try:
             satellites = load.tle(satellite_list_url)
-        except Exception as e:
-            print(e)
+        except Exception:
             raise IllegalArgumentException
 
-        satellites_list = []
+        satellites_dict = {}
 
         for satellite in satellites:
 
-            satellite_name = satellite
+            satellite_name = satellites[satellite].name
             satellite_info = satellites[satellite_name]
 
             current_satellite = Satellite(satellite_name, satellite_info)
 
-            satellites_list.append(current_satellite)
+            satellites_dict[satellite_name] = current_satellite
+
+        satellites_list = []
+        for satellite in satellites_dict:
+            satellites_list.append(satellites_dict[satellite])
 
         return satellites_list
 
     def find_visible_satellites_instance(self, satellites_list, observer_location, time_of_measurement):
+
+        if str (type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+            raise IllegalArgumentException
 
         # if the satellites list is empty then we return an empty array
         visible_satellites = []
@@ -157,6 +195,33 @@ class Scheduler:
                 visible_satellites_max_sub_interval = visible_satellites_sub_interval
 
         return start_time_of_max_sub_interval, visible_satellites_max_sub_interval
+
+    def find_max_visible_satellites_interval_cumulative(self, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
+
+        if not satellites_list:
+            return None, []
+
+        for satellite in satellites_list:
+            if type(satellite) is not Satellite:
+                raise IllegalArgumentException
+
+        start_time_interval = self.ts.utc(start_time)
+
+        number_of_sub_intervals = interval_duration // sub_interval_duration
+
+        visible_satellites_interval = []
+
+        for sub_interval in range(number_of_sub_intervals):
+
+            time_of_measurement = self.ts.utc(start_time + timedelta(minutes=sub_interval * sub_interval_duration))
+
+            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
+                                                                                    time_of_measurement)
+
+            # union 2 lists of Satellite objects - this seems too work but not sure 100%
+            visible_satellites_interval = list(set().union(visible_satellites_interval, visible_satellites_sub_interval))
+
+        return start_time_interval, visible_satellites_interval
 
 
 class Satellite:
