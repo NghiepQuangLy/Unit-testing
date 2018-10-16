@@ -470,3 +470,5 @@ if __name__ == "__main__":
     # b, c = a.find_time(cumulative = True)
     # d, e = a.find_time(cumulative = False)
 
+    print("Non-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}\n".format(d, len(e), ", ".join(e)))
+    print("Non-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}\n".format(d, len(e), ", ".join(e)))
