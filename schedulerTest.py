@@ -9,11 +9,10 @@ class SchedulerTest(unittest.TestCase):
     def setUp(self):
         self.scheduler = Scheduler()
 
+
     def test_itsalive(self):
         (stime, satellites) = self.scheduler.find_time()
-        self.assertTrue(type(stime)==type(datetime.now()))
-        self.assertTrue(satellites[0]=="ISS (ZARYA)")
-        self.assertTrue(satellites[1]=="COSMOS-123")
+        self.assertTrue(False)
 
     def test_exceptionthrown(self):
         with self.assertRaises(IllegalArgumentException):

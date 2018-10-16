@@ -129,7 +129,7 @@ class Scheduler:
                 max_interval_start = time
                 max_satellites_list = visible_satellites
 
-        return max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)
+        return [max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)]
 
     def satellites_list_to_satellites_name_list(self, satellites_list):
         """
