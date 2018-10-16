@@ -59,7 +59,6 @@ class Scheduler:
         """
 
         """ START Precondition Handling """
-
         # dealing with naive start_time which is a datetime object with no timezone
         try:
             timezone = pytz.timezone("UTC")
@@ -108,7 +107,6 @@ class Scheduler:
 
         if (location[1] < -180) or (location[1] > 180):
             raise IllegalArgumentException
-
         """ END Precondition Handling """
 
         observer_location = Topos(location[0], location[1])
@@ -135,7 +133,7 @@ class Scheduler:
                 max_interval_start = time
                 max_satellites_list = visible_satellites
 
-        return [max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)]
+        return max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)
 
     def satellites_list_to_satellites_name_list(self, satellites_list):
         """
@@ -152,11 +150,9 @@ class Scheduler:
         """
 
         """ START Precondition Handling """
-
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
-
         """ END Precondition Handling """
 
         satellites_name_list = []
@@ -181,12 +177,10 @@ class Scheduler:
         """
 
         """ START Precondition Handling """
-
         try:
             satellites = load.tle(satellite_list_url)
         except Exception:
             raise IllegalArgumentException
-
         """ END Precondition Handling """
 
         satellites_dict = {}
@@ -276,17 +270,16 @@ class Scheduler:
             return None, []
 
         """ START Precondition Handling """
-        """
-        for satellite in satellites_list:
-            if type(satellite) is not Satellite:
-                raise IllegalArgumentException
+        # for satellite in satellites_list:
+        #     if type(satellite) is not Satellite:
+        #         raise IllegalArgumentException
+        #
+        # if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+        #     raise IllegalArgumentException
+        #
+        # if str(type(start_time)) != "<class 'datetime.datetime'>":
+        #     raise IllegalArgumentException
 
-        if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
-            raise IllegalArgumentException
-
-        if str(type(start_time)) != "<class 'datetime.datetime'>":
-            raise IllegalArgumentException
-        """
         if type(interval_duration) is not int and type(interval_duration) is not float:
             raise IllegalArgumentException
 
@@ -298,7 +291,6 @@ class Scheduler:
 
         if sub_interval_duration <= 0 or sub_interval_duration > interval_duration:
             raise IllegalArgumentException
-
         """ END Precondition Handling """
 
         max_number_of_visible_satellites_sub_interval = 0
@@ -470,10 +462,16 @@ class Satellite:
 
 if __name__ == "__main__":
     a = Scheduler()
-    b, c = a.find_time(duration = 60, sample_interval = 20, cumulative = True)
-    d, e = a.find_time(duration = 60, sample_interval = 20, cumulative = False)
+    # b, c = a.find_time(duration = 60, sample_interval = 20, cumulative = True)
+    # d, e = a.find_time(duration = 60, sample_interval = 20, cumulative = False)
 
-    print("Cumulative Interval: {}\nCumulative Satellites (len: {}): {}\n".format(b, len(c), ", ".join(c)))
+    # b, c = a.find_time(start_time=datetime.now() + timedelta(minutes=0), n_windows=1, duration=60, cumulative=True)
+    # d, e = a.find_time(start_time=datetime.now() + timedelta(minutes=0), n_windows=1, duration=60, cumulative=False)
 
-    print("Non-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}\n".format(d, len(e), ", ".join(e)))
+    b, c = a.find_time(cumulative = True)
+    d, e = a.find_time(cumulative = False)
+
+    print("\nCumulative Interval: {}\nCumulative Satellites (len: {}): {}".format(b, len(c), ", ".join(c)))
+
+    print("\nNon-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}".format(d, len(e), ", ".join(e)))
 
