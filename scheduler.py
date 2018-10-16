@@ -247,7 +247,7 @@ class Scheduler:
     def find_max_visible_satellites_interval_non_cumulative(self, satellites_list, observer_location, start_time,
                                                             interval_duration, sub_interval_duration):
         """
-        Do something.
+        Finds the maximum visible satellites in a sub interval.
 
         Arguments:
             satellites_list -- dictionary of possible satellites
