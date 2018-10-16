@@ -99,25 +99,26 @@ class Scheduler:
         # they are unique by name, some satellites with the same name but different ids are not considered
         satellites_list = self.get_all_satellites(satlist_url)
 
-        start_time_max_sub_interval, visible_satellites_max_sub_interval = self.find_max_visible_satellites_interval_non_cumulative(satellites_list, observer_location,
-                                                                                                                                    start_time, duration, sample_interval)
+        max_interval_start = None
+        max_satellites_list = []
+        for i in range(n_windows):
+            time = start_time + timedelta(minutes = i*duration)
+            if cumulative:
+                _, visible_satellites = self.find_max_visible_satellites_interval_cumulative(satellites_list, observer_location, time, duration, sample_interval)
+            else:
+                _, visible_satellites = self.find_max_visible_satellites_interval_non_cumulative(satellites_list, observer_location, time, duration, sample_interval)
 
-        print('There are at maximum ', len(visible_satellites_max_sub_interval), 'visible satellites')
-        for visible_satellite in visible_satellites_max_sub_interval:
-            print(visible_satellite.name)
+            if len(visible_satellites) > len(max_satellites_list):
+                max_interval_start = time
+                max_satellites_list = visible_satellites
 
-        print('the start time is ', start_time_max_sub_interval)
+        return [max_interval_start,self.sat_to_str_list(max_satellites_list)]
 
-        start_time_interval, visible_satellites_interval = self.find_max_visible_satellites_interval_cumulative(satellites_list, observer_location, start_time,
-                                                                                                                duration, sample_interval)
-
-        print('we have ', len(visible_satellites_interval), 'visible satellites in this interval and they are')
-        for visible_satellite in visible_satellites_interval:
-            print(visible_satellite.name)
-        print('time of interval is ', start_time_interval)
-        print('we have in total ', len(satellites_list))
-
-        #return (start_time, ["ISS (ZARYA)", "COSMOS-123"])
+    def sat_to_str_list(self,sat_list):
+        str_list = [None]*len(sat_list)
+        for i in range(len(sat_list)):
+            str_list[i] = sat_list[i].name
+        return str_list
 
     def get_all_satellites(self, satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
 
@@ -251,4 +252,12 @@ class Satellite:
 
 
 a = Scheduler()
-a.find_time()
+b,c = a.find_time(duration=60,sample_interval=20,cumulative=True)
+d,e = a.find_time(duration=60,sample_interval=20,cumulative=False)
+print(b)
+print(len(c))
+print(c)
+print(d)
+print(len(e))
+print(e)
+
