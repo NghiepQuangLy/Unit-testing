@@ -79,6 +79,12 @@ class Scheduler:
         if type(sample_interval) is not int:
             raise IllegalArgumentException
 
+        if type(location) is not tuple and type(location) is not list:
+            raise IllegalArgumentException
+
+        if len(location) != 2:
+            raise IllegalArgumentException
+
         if type(location[0]) is not int and type(location[0]) is not float:
             raise IllegalArgumentException
 
@@ -129,7 +135,7 @@ class Scheduler:
                 max_interval_start = time
                 max_satellites_list = visible_satellites
 
-        return [max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)]
+        return max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)
 
     def satellites_list_to_satellites_name_list(self, satellites_list):
         """
@@ -151,9 +157,9 @@ class Scheduler:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
 
-        satellites_name_list = []
-
         """ END Precondition Handling """
+
+        satellites_name_list = []
 
         for satellite in satellites_list:
             satellites_name_list.append(satellite.name)
@@ -477,4 +483,3 @@ if __name__ == "__main__":
     print("Cumulative Interval: {}\nCumulative Satellites (len: {}): {}\n".format(b, len(c), ", ".join(c)))
 
     print("Non-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}\n".format(d, len(e), ", ".join(e)))
-
