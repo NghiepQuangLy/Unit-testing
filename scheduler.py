@@ -189,14 +189,15 @@ class Scheduler:
         if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
             raise IllegalArgumentException
 
+        if str(type(time_of_measurement)) != "<class 'skyfield.timelib.Time'>":
+            raise IllegalArgumentException
+
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
 
         # if the satellites list is empty then we return an empty array
         visible_satellites = []
-
-        # TODO: do we need to check if each element in the array is a satellite object?
 
         for satellite in satellites_list:
 
@@ -233,6 +234,24 @@ class Scheduler:
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
+
+        if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+            raise IllegalArgumentException
+
+        if str(type(start_time)) != "<class 'datetime.datetime'>":
+            raise  IllegalArgumentException
+
+        if type(interval_duration) is not int and type(interval_duration) is not float:
+            raise IllegalArgumentException
+
+        if type(sub_interval_duration) is not int and type(sub_interval_duration) is not float:
+            raise IllegalArgumentException
+        
+        if interval_duration <= 0:
+            raise IllegalArgumentException
+
+        if sub_interval_duration <= 0 or sub_interval_duration > interval_duration:
+            raise IllegalArgumentException
 
         max_number_of_visible_satellites_sub_interval = 0
 
