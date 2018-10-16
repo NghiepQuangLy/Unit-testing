@@ -106,27 +106,36 @@ class Scheduler:
 
         max_interval_start = None
         max_satellites_list = []
+
         for i in range(n_windows):
-            time = start_time + timedelta(minutes = i*duration)
+
+            time = start_time + timedelta(minutes = i * duration)
+
             if cumulative:
                 _, visible_satellites = self.find_max_visible_satellites_interval_cumulative(satellites_list, observer_location, time, duration, sample_interval)
             else:
-                _, visible_satellites = self.find_max_visible_satellites_interval_non_cumulative(satellites_list, observer_location, time, duration, sample_interval)
+                max_sub_interval_time, visible_satellites = self.find_max_visible_satellites_interval_non_cumulative(satellites_list, observer_location, time, duration, sample_interval)
 
             if len(visible_satellites) > len(max_satellites_list):
                 max_interval_start = time
                 max_satellites_list = visible_satellites
 
-        return [max_interval_start,self.sat_to_str_list(max_satellites_list)]
+        return [max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)]
 
-    def sat_to_str_list(self,sat_list):
-        str_list = [None]*len(sat_list)
-        for i in range(len(sat_list)):
-            str_list[i] = sat_list[i].name
-        return str_list
+    def satellites_list_to_satellites_name_list(self, satellites_list):
 
+        for satellite in satellites_list:
+            if type(satellite) is not Satellite:
+                raise IllegalArgumentException
 
-    def get_all_satellites(self,satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
+        satellites_name_list = []
+
+        for satellite in satellites_list:
+            satellites_name_list.append(satellite.name)
+
+        return satellites_name_list
+
+    def get_all_satellites(self, satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
         """
         Get a dictionary og all satellite information from a specified URL.
 
@@ -179,6 +188,10 @@ class Scheduler:
         """
         if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
             raise IllegalArgumentException
+
+        for satellite in satellites_list:
+            if type(satellite) is not Satellite:
+                raise IllegalArgumentException
 
         # if the satellites list is empty then we return an empty array
         visible_satellites = []
