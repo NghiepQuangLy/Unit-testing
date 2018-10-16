@@ -25,7 +25,8 @@ class Scheduler:
         self._skyload = Loader('~/.skyfield-data')
         self.ts = self._skyload.timescale()
 
-    def find_time(self, satlist_url="http://celestrak.com/NORAD/elements/visual.txt", start_time=datetime.now(), n_windows=24, duration=60, sample_interval=1, cumulative=False, location=(-37.910496, 145.134021)):
+    def find_time(self, satlist_url = "http://celestrak.com/NORAD/elements/visual.txt", start_time = datetime.now(),
+                  n_windows = 24, duration = 60, sample_interval = 1, cumulative = False, location = (-37.910496, 145.134021)):
         """
         NOTE: this is the key function that you'll need to implement for the assignment.  Please don't change the arguments.
 
@@ -57,8 +58,11 @@ class Scheduler:
         """
 
         # dealing with naive start_time which is a datetime object with no timezone
-        timezone = pytz.timezone("UTC")
-        start_time = timezone.localize(start_time)
+        try:
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(start_time)
+        except Exception:
+            raise IllegalArgumentException
 
         """ START Precondition Handling """
         if (start_time.tzinfo is None) or (str (start_time.tzinfo) != "UTC"):
@@ -112,17 +116,31 @@ class Scheduler:
             time = start_time + timedelta(minutes = i * duration)
 
             if cumulative:
-                _, visible_satellites = self.find_max_visible_satellites_interval_cumulative(satellites_list, observer_location, time, duration, sample_interval)
+                _, visible_satellites = self.find_max_visible_satellites_interval_cumulative(
+                    satellites_list, observer_location, time, duration, sample_interval)
             else:
-                max_sub_interval_time, visible_satellites = self.find_max_visible_satellites_interval_non_cumulative(satellites_list, observer_location, time, duration, sample_interval)
+                _, visible_satellites = self.find_max_visible_satellites_interval_non_cumulative(
+                    satellites_list, observer_location, time, duration, sample_interval)
 
             if len(visible_satellites) > len(max_satellites_list):
                 max_interval_start = time
                 max_satellites_list = visible_satellites
 
-        return [max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)]
+        return max_interval_start, self.satellites_list_to_satellites_name_list(max_satellites_list)
 
     def satellites_list_to_satellites_name_list(self, satellites_list):
+        """
+        Convert a satellite list to a list of satellite names.
+
+        Arguments:
+            satellites_list -- list of satellites
+
+        Returns:
+            a list of just the satellite names
+
+        Raises:
+            IllegalArgumentException -- if any of the items in satellites_list are not of type Satellite
+        """
 
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
@@ -135,7 +153,7 @@ class Scheduler:
 
         return satellites_name_list
 
-    def get_all_satellites(self, satellite_list_url='http://celestrak.com/NORAD/elements/visual.txt'):
+    def get_all_satellites(self, satellite_list_url = "http://celestrak.com/NORAD/elements/visual.txt"):
         """
         Get a dictionary og all satellite information from a specified URL.
 
@@ -209,7 +227,8 @@ class Scheduler:
 
         return visible_satellites
 
-    def find_max_visible_satellites_interval_non_cumulative(self, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
+    def find_max_visible_satellites_interval_non_cumulative(self, satellites_list, observer_location, start_time,
+                                                            interval_duration, sub_interval_duration):
         """
         Do something.
 
@@ -239,7 +258,7 @@ class Scheduler:
             raise IllegalArgumentException
 
         if str(type(start_time)) != "<class 'datetime.datetime'>":
-            raise  IllegalArgumentException
+            raise IllegalArgumentException
 
         if type(interval_duration) is not int and type(interval_duration) is not float:
             raise IllegalArgumentException
@@ -265,7 +284,8 @@ class Scheduler:
 
             time_of_measurement = self.ts.utc(start_time + timedelta(minutes=sub_interval * sub_interval_duration))
 
-            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location, time_of_measurement)
+            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
+                                                                                    time_of_measurement)
 
             number_of_visible_satellites_sub_interval = len(visible_satellites_sub_interval)
 
@@ -276,7 +296,8 @@ class Scheduler:
 
         return start_time_of_max_sub_interval, visible_satellites_max_sub_interval
 
-    def find_max_visible_satellites_interval_cumulative(self, satellites_list, observer_location, start_time, interval_duration, sub_interval_duration):
+    def find_max_visible_satellites_interval_cumulative(self, satellites_list, observer_location, start_time,
+                                                        interval_duration, sub_interval_duration):
         """
         Do something.
 
@@ -302,6 +323,24 @@ class Scheduler:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
 
+        if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+            raise IllegalArgumentException
+
+        if str(type(start_time)) != "<class 'datetime.datetime'>":
+            raise IllegalArgumentException
+
+        if type(interval_duration) is not int and type(interval_duration) is not float:
+            raise IllegalArgumentException
+
+        if type(sub_interval_duration) is not int and type(sub_interval_duration) is not float:
+            raise IllegalArgumentException
+
+        if interval_duration <= 0:
+            raise IllegalArgumentException
+
+        if sub_interval_duration <= 0 or sub_interval_duration > interval_duration:
+            raise IllegalArgumentException
+
         start_time_interval = self.ts.utc(start_time)
 
         number_of_sub_intervals = interval_duration // sub_interval_duration
@@ -312,7 +351,8 @@ class Scheduler:
 
             time_of_measurement = self.ts.utc(start_time + timedelta(minutes=sub_interval * sub_interval_duration))
 
-            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location, time_of_measurement)
+            visible_satellites_sub_interval = self.find_visible_satellites_instance(satellites_list, observer_location,
+                                                                                    time_of_measurement)
 
             # union 2 lists of Satellite objects - this seems too work but not sure 100%
             visible_satellites_interval = list(set().union(visible_satellites_interval, visible_satellites_sub_interval))
@@ -371,8 +411,8 @@ class Satellite:
         """
 
         try:
-            float (position_elevation)
-        except:
+            float(position_elevation)
+        except Exception:
             raise IllegalArgumentException
 
         result = False
@@ -383,15 +423,12 @@ class Satellite:
         return result
 
 
-a = Scheduler()
-b,c = a.find_time(duration=60,sample_interval=20,cumulative=True)
-d,e = a.find_time(duration=60,sample_interval=20,cumulative=False)
-print(b)
-print(len(c))
-print(c)
-print(d)
-print(len(e))
-print(e)
+if __name__ == "__main__":
+    a = Scheduler()
+    b, c = a.find_time(duration = 60, sample_interval = 20, cumulative = True)
+    d, e = a.find_time(duration = 60, sample_interval = 20, cumulative = False)
 
+    print("Cumulative Interval: {}\nCumulative Satellites (len: {}): {}\n".format(b, len(c), ", ".join(c)))
 
+    print("Non-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}\n".format(d, len(e), ", ".join(e)))
 
