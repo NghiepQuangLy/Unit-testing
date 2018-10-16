@@ -11,11 +11,18 @@ class SatelliteTest(unittest.TestCase):
     """ Tests for the Satellite class. """
 
     def setUp(self):
+        # TODO: mock valid Satellite info?
         self.satellite = Satellite("name", "info")
 
-    def test_is_visible_invalid(self):
+    def test_is_visible_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
             self.satellite.is_visible(None)
+
+    def test_is_visible_true(self):
+        self.assertTrue(self.satellite.is_visible(10))
+
+    def test_is_visible_false(self):
+        self.assertFalse(self.satellite.is_visible(-10))
 
 
 class Alt:
