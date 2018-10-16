@@ -26,7 +26,8 @@ class Scheduler:
         self.ts = self._skyload.timescale()
 
     def find_time(self, satlist_url = "http://celestrak.com/NORAD/elements/visual.txt", start_time = datetime.now(),
-                  n_windows = 24, duration = 60, sample_interval = 1, cumulative = False, location = (-37.910496, 145.134021)):
+                  n_windows = 24, duration = 60, sample_interval = 1, cumulative = False,
+                  location = (-37.910496, 145.134021)):
         """
         NOTE: this is the key function that you'll need to implement for the assignment.  Please don't change the arguments.
 
@@ -34,8 +35,8 @@ class Scheduler:
             satlist_url (string) -- a URL to a file containing a list of Earth-orbiting satellites in TLE format)
             start_time -- a Python Datetime object representing the
                 the start of the potential observation windows, return
-            duration -- the size (in minutes) of an observation window - must be positive
             n_windows -- the number of observation windows to check.  Must be a positive integer
+            duration -- the size (in minutes) of an observation window - must be positive
             sample_interval -- the interval (in minutes) at which the visible
                 satellites are checked.  Must be smaller than duration.
             cumulative -- a boolean to determine whether we look for the maximum number
@@ -57,6 +58,8 @@ class Scheduler:
             IllegalArgumentException -- if an illegal argument is provided
         """
 
+        """ START Precondition Handling """
+
         # dealing with naive start_time which is a datetime object with no timezone
         try:
             timezone = pytz.timezone("UTC")
@@ -64,7 +67,6 @@ class Scheduler:
         except Exception:
             raise IllegalArgumentException
 
-        """ START Precondition Handling """
         if (start_time.tzinfo is None) or (str (start_time.tzinfo) != "UTC"):
             raise IllegalArgumentException
 
@@ -100,6 +102,7 @@ class Scheduler:
 
         if (location[1] < -180) or (location[1] > 180):
             raise IllegalArgumentException
+
         """ END Precondition Handling """
 
         observer_location = Topos(location[0], location[1])
@@ -111,9 +114,9 @@ class Scheduler:
         max_interval_start = None
         max_satellites_list = []
 
-        for i in range(n_windows):
+        for interval in range(n_windows):
 
-            time = start_time + timedelta(minutes = i * duration)
+            time = start_time + timedelta(minutes = interval * duration)
 
             if cumulative:
                 _, visible_satellites = self.find_max_visible_satellites_interval_cumulative(
@@ -142,11 +145,15 @@ class Scheduler:
             IllegalArgumentException -- if any of the items in satellites_list are not of type Satellite
         """
 
+        """ START Precondition Handling """
+
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
 
         satellites_name_list = []
+
+        """ END Precondition Handling """
 
         for satellite in satellites_list:
             satellites_name_list.append(satellite.name)
@@ -166,10 +173,15 @@ class Scheduler:
         Returns:
             a dictionary of all available satellites, using a satellites name as the key
         """
+
+        """ START Precondition Handling """
+
         try:
             satellites = load.tle(satellite_list_url)
         except Exception:
             raise IllegalArgumentException
+
+        """ END Precondition Handling """
 
         satellites_dict = {}
 
@@ -204,6 +216,9 @@ class Scheduler:
         Returns:
             a list of all visible satellites from observer_location at time_of_measurement from satellites_list
         """
+
+        """ START Precondition Handling """
+
         if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
             raise IllegalArgumentException
 
@@ -213,6 +228,8 @@ class Scheduler:
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
+
+        """ END Precondition Handling """
 
         # if the satellites list is empty then we return an empty array
         visible_satellites = []
@@ -250,6 +267,8 @@ class Scheduler:
         if not satellites_list:
             return None, []
 
+        """ START Precondition Handling """
+
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
@@ -272,6 +291,8 @@ class Scheduler:
         if sub_interval_duration <= 0 or sub_interval_duration > interval_duration:
             raise IllegalArgumentException
 
+        """ END Precondition Handling """
+
         max_number_of_visible_satellites_sub_interval = 0
 
         start_time_of_max_sub_interval = self.ts.utc(start_time)
@@ -290,8 +311,11 @@ class Scheduler:
             number_of_visible_satellites_sub_interval = len(visible_satellites_sub_interval)
 
             if max_number_of_visible_satellites_sub_interval < number_of_visible_satellites_sub_interval:
+
                 max_number_of_visible_satellites_sub_interval = number_of_visible_satellites_sub_interval
+
                 start_time_of_max_sub_interval = time_of_measurement
+
                 visible_satellites_max_sub_interval = visible_satellites_sub_interval
 
         return start_time_of_max_sub_interval, visible_satellites_max_sub_interval
@@ -316,8 +340,11 @@ class Scheduler:
                 start_time_interval -- ?
                 visible_satellites_interval -- ?
         """
+
         if not satellites_list:
             return None, []
+
+        """ START Precondition Handling """
 
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
@@ -340,6 +367,8 @@ class Scheduler:
 
         if sub_interval_duration <= 0 or sub_interval_duration > interval_duration:
             raise IllegalArgumentException
+
+        """ END Precondition Handling """
 
         start_time_interval = self.ts.utc(start_time)
 
@@ -386,11 +415,15 @@ class Satellite:
              ?
         """
 
+        """ START Precondition Handling """
+
         if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
             raise IllegalArgumentException
 
         if str(type(time_of_measurement)) != "<class 'skyfield.timelib.Time'>":
             raise IllegalArgumentException
+
+        """ END Precondition Handling """
 
         location_difference = self.info - observer_location
         location_difference = location_difference.at(time_of_measurement)
@@ -410,10 +443,14 @@ class Satellite:
              True if satellite is visible, False otherwise
         """
 
+        """ START Precondition Handling """
+
         try:
             float(position_elevation)
         except Exception:
             raise IllegalArgumentException
+
+        """ END Precondition Handling """
 
         result = False
 
