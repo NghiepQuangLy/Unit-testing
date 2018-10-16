@@ -79,6 +79,12 @@ class Scheduler:
         if type(sample_interval) is not int:
             raise IllegalArgumentException
 
+        if type(location) is not tuple and type(location) is not list:
+            raise IllegalArgumentException
+
+        if len(location) != 2:
+            raise IllegalArgumentException
+
         if type(location[0]) is not int and type(location[0]) is not float:
             raise IllegalArgumentException
 
