@@ -246,7 +246,7 @@ class Scheduler:
 
         if type(sub_interval_duration) is not int and type(sub_interval_duration) is not float:
             raise IllegalArgumentException
-        
+
         if interval_duration <= 0:
             raise IllegalArgumentException
 
@@ -345,6 +345,13 @@ class Satellite:
         Returns:
              ?
         """
+
+        if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+            raise IllegalArgumentException
+
+        if str(type(time_of_measurement)) != "<class 'skyfield.timelib.Time'>":
+            raise IllegalArgumentException
+
         location_difference = self.info - observer_location
         location_difference = location_difference.at(time_of_measurement)
 
@@ -362,6 +369,12 @@ class Satellite:
         Returns:
              True if satellite is visible, False otherwise
         """
+
+        try:
+            float (position_elevation)
+        except:
+            raise IllegalArgumentException
+
         result = False
 
         if position_elevation > 0:
