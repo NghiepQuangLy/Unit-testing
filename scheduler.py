@@ -151,9 +151,9 @@ class Scheduler:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
 
-        satellites_name_list = []
-
         """ END Precondition Handling """
+
+        satellites_name_list = []
 
         for satellite in satellites_list:
             satellites_name_list.append(satellite.name)
