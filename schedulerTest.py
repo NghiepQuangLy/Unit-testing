@@ -2,13 +2,18 @@ import unittest
 from scheduler import Scheduler
 from scheduler import Satellite
 from scheduler import IllegalArgumentException
-from datetime import datetime
+from datetime import datetime, timedelta
+from unittest.mock import patch, Mock
+import pytz
 
 #
 # class SatelliteTest(unittest.TestCase):
 #
 #     def setUp(self):
 #         self.satellite = Satellite()
+class Alt:
+    def __init__(self,alt):
+        self.degrees = alt
 
 class SchedulerTest(unittest.TestCase):
     '''Tests for the scheduler class.  Add more tests
@@ -19,65 +24,98 @@ class SchedulerTest(unittest.TestCase):
 
     def test_its_alive(self):
         (stime, satellites) = self.scheduler.find_time()
-        self.assertTrue(type(stime)==type(datetime.now()))
+        self.assertTrue(type(stime) == type(datetime.now()))
         # self.assertTrue(satellites[0]=="ISS (ZARYA)")
         # self.assertTrue(satellites[1]=="COSMOS-123")
 
     def test_find_time_start_time_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(start_time = "now")
+            self.scheduler.find_time(start_time="now")
 
     def test_find_time_duration_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(duration = 'a')
+            self.scheduler.find_time(duration='a')
 
     def test_find_time_duration_non_positive(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(duration = -1)
+            self.scheduler.find_time(duration=-1)
 
     def test_find_time_n_windows_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(n_windows = 'a')
+            self.scheduler.find_time(n_windows='a')
 
     def test_find_time_n_windows_non_positive(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(n_windows = 0)
+            self.scheduler.find_time(n_windows=0)
 
     def test_find_time_sample_interval_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(sample_interval = 'a')
+            self.scheduler.find_time(sample_interval='a')
 
     def test_find_time_sample_interval_non_positive(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(sample_interval = 0)
+            self.scheduler.find_time(sample_interval=0)
 
     def test_find_time_sample_interval_bigger_than_duration(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(sample_interval = 70, duration = 60)
+            self.scheduler.find_time(sample_interval=70, duration=60)
 
     def test_find_time_location_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(location = 'a')
+            self.scheduler.find_time(location='a')
 
     def test_find_time_location_invalid_list_or_tuple(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(location = (1, 2, 3))
+            self.scheduler.find_time(location=(1, 2, 3))
 
     def test_find_time_location_latitude_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(location = ('a', 0))
+            self.scheduler.find_time(location=('a', 0))
 
     def test_find_time_location_latitude_out_of_range(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(location = (-100, 0))
+            self.scheduler.find_time(location=(-100, 0))
 
     def test_find_time_location_longitude_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(location = (0, 'a'))
+            self.scheduler.find_time(location=(0, 'a'))
 
     def test_find_time_location_longitude_out_of_range(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(location = (0, 200))
+            self.scheduler.find_time(location=(0, 200))
+
+    @patch.object(Satellite, "get_altitude")
+    def test_find_visible_satellites_instance(self, mock_get_altitude):
+        satellites_list = [Satellite('sat_1',None),
+                           Satellite('sat_2',None),
+                           Satellite('sat_3',None),
+                           Satellite('sat_4',None)]
+        mock_get_altitude.side_effect = [Alt(10),Alt(-10),Alt(-10),Alt(10)]
+        visible_satellites = self.scheduler.find_visible_satellites_instance(satellites_list, None, None)
+        assert([visible_satellites[0].name == 'sat_1'])
+        assert([visible_satellites[1].name == 'sat_4'])
+
+    @patch.object(Scheduler, "find_visible_satellites_instance")
+    def test_find_max_visible_satellites_interval_non_cumulative(self, mock_find_visible_satellites_instance):
+        mock_find_visible_satellites_instance.side_effect = [['sat_1'],['sat_1','sat_2']]
+
+        timezone = pytz.timezone("UTC")
+        start_time = timezone.localize(datetime(2018,1,1,10,0,0))
+
+        interval_start_time, visible_sats = self.scheduler.find_max_visible_satellites_interval_non_cumulative([None],None,start_time,120,60)
+        assert(interval_start_time.utc_datetime()==start_time + timedelta(hours=1))
+        assert(visible_sats == ['sat_1','sat_2'])
+
+    @patch.object(Scheduler, "find_visible_satellites_instance")
+    def test_find_max_visible_satellites_interval_cumulative(self, mock_find_visible_satellites_instance):
+        mock_find_visible_satellites_instance.side_effect = [['sat_1','sat_2'],['sat_2','sat_3']]
+
+        timezone = pytz.timezone("UTC")
+        start_time = timezone.localize(datetime(2018,1,1,10,0,0))
+
+        interval_start_time, visible_sats = self.scheduler.find_max_visible_satellites_interval_cumulative([None],None,start_time,120,60)
+        assert(interval_start_time.utc_datetime()==start_time)
+        assert(len(visible_sats) == 3)
 
 if __name__=="__main__":
     unittest.main()
