@@ -162,7 +162,7 @@ class Scheduler:
 
     def get_all_satellites(self, satellite_list_url = "http://celestrak.com/NORAD/elements/visual.txt"):
         """
-        Get a dictionary og all satellite information from a specified URL.
+        Get a dictionary of all satellite information from a specified URL.
 
         Arguments:
             satellite_list_url -- URL to retrieve information from (defaults to Celestrak NORAD)
@@ -261,8 +261,10 @@ class Scheduler:
 
         Returns:
             (start_time_of_max_sub_interval, visible_satellites_max_sub_interval) where
-                start_time_of_max_sub_interval -- ?
-                visible_satellites_max_sub_interval -- ?
+                start_time_of_max_sub_interval -- the time of the sub interval within the interval where there is the
+                                                  highest amount of visible satellites
+                visible_satellites_max_sub_interval -- the satellites that are visible in the sub interval where there
+                                                       is the highest amount of visible satellites
         """
         if not satellites_list:
             return None, []
@@ -323,7 +325,7 @@ class Scheduler:
     def find_max_visible_satellites_interval_cumulative(self, satellites_list, observer_location, start_time,
                                                         interval_duration, sub_interval_duration):
         """
-        Do something.
+        Find the cumulative visible satellites from the start_time in a period of interval_duration minutes.
 
         Arguments:
             satellites_list -- dictionary of possible satellites
@@ -337,8 +339,8 @@ class Scheduler:
 
         Returns:
             (start_time_interval, visible_satellites_interval) where
-                start_time_interval -- ?
-                visible_satellites_interval -- ?
+                start_time_interval -- the start time of the interval and is the start_time argument itself
+                visible_satellites_interval -- all the visible satellites in that interval
         """
 
         if not satellites_list:
@@ -400,6 +402,13 @@ class Satellite:
             info -- telemetry information of satellite
         """
 
+        """ START Precondition Handling """
+
+        if str(type(info)) != "<class 'skyfield.sgp4lib.EarthSatellite'>":
+            raise IllegalArgumentException
+
+        """ END Precondition Handling """
+
         self.name = name
         self.info = info
 
@@ -412,7 +421,7 @@ class Satellite:
             time_of_measurement -- time of observation
 
         Returns:
-             ?
+             The altitude of the satellite relative to the observer's location at the time of measurement
         """
 
         """ START Precondition Handling """
