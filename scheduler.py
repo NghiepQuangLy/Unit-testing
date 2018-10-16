@@ -345,17 +345,16 @@ class Scheduler:
             return None, []
 
         """ START Precondition Handling """
-        """
-        for satellite in satellites_list:
-            if type(satellite) is not Satellite:
-                raise IllegalArgumentException
+        # for satellite in satellites_list:
+        #     if type(satellite) is not Satellite:
+        #         raise IllegalArgumentException
+        #
+        # if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+        #     raise IllegalArgumentException
+        #
+        # if str(type(start_time)) != "<class 'datetime.datetime'>":
+        #     raise IllegalArgumentException
 
-        if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
-            raise IllegalArgumentException
-
-        if str(type(start_time)) != "<class 'datetime.datetime'>":
-            raise IllegalArgumentException
-        """
         if type(interval_duration) is not int and type(interval_duration) is not float:
             raise IllegalArgumentException
 
@@ -367,7 +366,6 @@ class Scheduler:
 
         if sub_interval_duration <= 0 or sub_interval_duration > interval_duration:
             raise IllegalArgumentException
-
         """ END Precondition Handling """
 
         start_time_interval = self.ts.utc(start_time)
@@ -400,6 +398,11 @@ class Satellite:
             info -- telemetry information of satellite
         """
 
+        """ START Precondition Handling """
+        # if str(type(info)) != "<class 'skyfield.sgp4lib.EarthSatellite'>":
+        #     raise IllegalArgumentException
+        """ END Precondition Handling """
+
         self.name = name
         self.info = info
 
@@ -416,13 +419,11 @@ class Satellite:
         """
 
         """ START Precondition Handling """
-
-        if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
-            raise IllegalArgumentException
-
-        if str(type(time_of_measurement)) != "<class 'skyfield.timelib.Time'>":
-            raise IllegalArgumentException
-
+        # if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+        #     raise IllegalArgumentException
+        #
+        # if str(type(time_of_measurement)) != "<class 'skyfield.timelib.Time'>":
+        #     raise IllegalArgumentException
         """ END Precondition Handling """
 
         location_difference = self.info - observer_location
@@ -444,12 +445,10 @@ class Satellite:
         """
 
         """ START Precondition Handling """
-
         try:
             float(position_elevation)
         except Exception:
             raise IllegalArgumentException
-
         """ END Precondition Handling """
 
         result = False
@@ -462,16 +461,10 @@ class Satellite:
 
 if __name__ == "__main__":
     a = Scheduler()
-    # b, c = a.find_time(duration = 60, sample_interval = 20, cumulative = True)
-    # d, e = a.find_time(duration = 60, sample_interval = 20, cumulative = False)
+    b, c = a.find_time(duration = 60, sample_interval = 20, cumulative = True)
+    d, e = a.find_time(duration = 60, sample_interval = 20, cumulative = False)
 
-    # b, c = a.find_time(start_time=datetime.now() + timedelta(minutes=0), n_windows=1, duration=60, cumulative=True)
-    # d, e = a.find_time(start_time=datetime.now() + timedelta(minutes=0), n_windows=1, duration=60, cumulative=False)
+    print("Cumulative Interval: {}\nCumulative Satellites (len: {}): {}\n".format(b, len(c), ", ".join(c)))
 
-    b, c = a.find_time(cumulative = True)
-    d, e = a.find_time(cumulative = False)
-
-    print("\nCumulative Interval: {}\nCumulative Satellites (len: {}): {}".format(b, len(c), ", ".join(c)))
-
-    print("\nNon-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}".format(d, len(e), ", ".join(e)))
+    print("Non-Cumulative Interval: {}\nNon-Cumulative Satellites (len: {}): {}\n".format(d, len(e), ", ".join(e)))
 
