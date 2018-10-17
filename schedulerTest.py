@@ -149,19 +149,22 @@ class SchedulerTest(unittest.TestCase):
         timezone = pytz.timezone("UTC")
         time = timezone.localize(datetime.now())
 
-        mock_values = [[time, [Satellite('sat_1', None),
-                               Satellite('sat_2', None)]],
-                       [time, [Satellite('sat_1', None),
-                               Satellite('sat_2', None),
-                               Satellite('sat_3', None)]],
-                       [time, [Satellite('sat_4', None)]],
-                       [time, []]]
+        mock_values = [[time,                       [Satellite('sat_1', None),
+                                                     Satellite('sat_2', None)]],
+                       [time + timedelta(hours=1),  [Satellite('sat_1', None),
+                                                     Satellite('sat_2', None),
+                                                     Satellite('sat_3', None)]],
+                       [time + timedelta(hours=2),  [Satellite('sat_1', None),
+                                                     Satellite('sat_2', None),
+                                                     Satellite('sat_3', None),
+                                                     Satellite('sat_4', None)]],
+                       [time + timedelta(hours=3),  []]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
 
         max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4, cumulative=True)
 
-        self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=1)))
-        self.assertTrue(len(max_interval_satellites) == 3)
+        self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=2)))
+        self.assertTrue(len(max_interval_satellites) == 4)
 
     @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
     def test_find_time_non_cumulative(self, mock_find_max_visible_satellites_interval_non_cumulative):
