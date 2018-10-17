@@ -38,6 +38,14 @@ class SchedulerTest(unittest.TestCase):
     def setUp(self):
         self.scheduler = Scheduler()
 
+    def check_times_equal(self,time1,time2):
+        time1_str = '{:%Y-%m-%d-%H-%M-%S:}'.format(time1)
+        time2_str = '{:%Y-%m-%d-%H-%M-%S:}'.format(time2)
+        if time1_str == time2_str:
+            return True
+        else:
+            return False
+
     def test_its_alive(self):
         (stime, satellites) = self.scheduler.find_time()
         self.assertTrue(type(stime) == type(datetime.now()))
@@ -113,6 +121,20 @@ class SchedulerTest(unittest.TestCase):
     def test_get_all_satellites_invalid_url(self):
         with self.assertRaises(IllegalArgumentException):
             self.scheduler.get_all_satellites("invalid_url")
+
+    @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
+    def test_find_time_cumulative(self, mock_find_max_visible_satellites_interval_cumulative):
+        timezone = pytz.timezone("UTC")
+        time = timezone.localize(datetime.now())
+        mock_values = [[time,[Satellite('sat_1',None),
+                              Satellite('sat_2', None)]],
+                       [time,[Satellite('sat_1', None),
+                              Satellite('sat_2', None),
+                              Satellite('sat_3', None)]]]
+        mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
+        max_interval_start,max_interval_satellites = self.scheduler.find_time(n_windows=2,cumulative=True)
+        self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=1)))
+        self.assertTrue(len(max_interval_satellites) == 3)
 
     @patch.object(Satellite, "get_altitude")
     def test_find_visible_satellites_instance(self, mock_get_altitude):
