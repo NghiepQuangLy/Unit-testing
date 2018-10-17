@@ -124,68 +124,112 @@ class SchedulerTest(unittest.TestCase):
 
     @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
     def test_find_time_cumulative_naive_time(self, mock_find_max_visible_satellites_interval_cumulative):
+
         timezone = pytz.timezone("UTC")
         time_copy = datetime.now()
         time = timezone.localize(time_copy)
-        mock_values = [[time,[Satellite('sat_1',None),
-                              Satellite('sat_2', None)]],
-                       [time,[Satellite('sat_1', None),
-                              Satellite('sat_2', None),
-                              Satellite('sat_3', None)]]]
+
+        mock_values = [[time, [Satellite('sat_1',None),
+                               Satellite('sat_2', None)]],
+                       [time, [Satellite('sat_1', None),
+                               Satellite('sat_2', None),
+                               Satellite('sat_3', None)]],
+                       [time, [Satellite('sat_4', None)]],
+                       [time, []]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
-        max_interval_start,max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=2, cumulative=True)
+
+        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=2, cumulative=True)
+
         self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=1)))
         self.assertTrue(len(max_interval_satellites) == 3)
 
     @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
     def test_find_time_cumulative_non_naive_time(self, mock_find_max_visible_satellites_interval_cumulative):
+
         timezone = pytz.timezone("UTC")
         time = timezone.localize(datetime.now())
+
         mock_values = [[time, [Satellite('sat_1', None),
                                Satellite('sat_2', None)]],
                        [time, [Satellite('sat_1', None),
                                Satellite('sat_2', None),
-                               Satellite('sat_3', None)]]]
+                               Satellite('sat_3', None)]],
+                       [time, [Satellite('sat_4', None)]],
+                       [time, []]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
-        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=2,
-                                                                               cumulative=True)
+
+        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4, cumulative=True)
+
         self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=1)))
         self.assertTrue(len(max_interval_satellites) == 3)
 
+    @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
+    def test_find_time_non_cumulative(self, mock_find_max_visible_satellites_interval_non_cumulative):
+
+        timezone = pytz.timezone("UTC")
+        time = timezone.localize(datetime.now())
+
+        mock_values = [[time, [Satellite('sat_1', None),
+                               Satellite('sat_2', None)]],
+                       [time, [Satellite('sat_1', None),
+                               Satellite('sat_2', None),
+                               Satellite('sat_3', None)]],
+                       [time, [Satellite('sat_4', None)]],
+                       [time, []]]
+        mock_find_max_visible_satellites_interval_non_cumulative.side_effect = mock_values
+
+        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4,
+                                                                               cumulative=True)
+
+        self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=1)))
+        self.assertTrue(len(max_interval_satellites) == 3)
+
+
     @patch.object(Satellite, "get_altitude")
     def test_find_visible_satellites_instance(self, mock_get_altitude):
+
         satellites_list = [Satellite('sat_1', None),
                            Satellite('sat_2', None),
                            Satellite('sat_3', None),
                            Satellite('sat_4', None)]
-        mock_get_altitude.side_effect = [TestingAlt(10), TestingAlt(-10), TestingAlt(-10), TestingAlt(10)]
+
+        mock_values = [TestingAlt(10), TestingAlt(-10), TestingAlt(-10), TestingAlt(10)]
+        mock_get_altitude.side_effect = mock_values
+
         visible_satellites = self.scheduler.find_visible_satellites_instance(satellites_list, None, None)
+
         self.assertTrue([visible_satellites[0].name == 'sat_1'])
         self.assertTrue([visible_satellites[1].name == 'sat_4'])
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_non_cumulative(self, mock_find_visible_satellites_instance):
-        mock_find_visible_satellites_instance.side_effect = [['sat_1'], ['sat_1', 'sat_2']]
 
         timezone = pytz.timezone("UTC")
         start_time = timezone.localize(datetime(2018, 1, 1, 10, 0, 0))
 
-        interval_start_time, visible_sats = self.scheduler.find_max_visible_satellites_interval_non_cumulative(
+        mock_values = [['sat_1'], ['sat_1', 'sat_2']]
+        mock_find_visible_satellites_instance.side_effect = mock_values
+
+        interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_non_cumulative(
             [None], None, start_time, 120, 60)
+
         self.assertTrue(interval_start_time.utc_datetime() == start_time + timedelta(hours=1))
-        self.assertTrue(visible_sats == ['sat_1', 'sat_2'])
+        self.assertTrue(visible_satellites == ['sat_1', 'sat_2'])
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_cumulative(self, mock_find_visible_satellites_instance):
-        mock_find_visible_satellites_instance.side_effect = [['sat_1', 'sat_2'], ['sat_2', 'sat_3']]
 
         timezone = pytz.timezone("UTC")
         start_time = timezone.localize(datetime(2018, 1, 1, 10, 0, 0))
 
-        interval_start_time, visible_sats = self.scheduler.find_max_visible_satellites_interval_cumulative(
-            [None], None, start_time, 120, 60)
+        mock_values = [['sat_1', 'sat_2'], ['sat_2', 'sat_3'], ['sat_4']]
+        mock_find_visible_satellites_instance.side_effect = mock_values
+
+        interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_cumulative(
+            [None], None, start_time, 120, 40)
+
         self.assertTrue(interval_start_time.utc_datetime() == start_time)
-        self.assertTrue(len(visible_sats) == 3)
+        self.assertTrue(len(visible_satellites) == 4)
 
 
 if __name__ == "__main__":
