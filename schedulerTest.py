@@ -103,7 +103,10 @@ class SchedulerTest(unittest.TestCase):
 
     def test_find_time_cumulative_non_boolean(self):
         with self.assertRaises(IllegalArgumentException):
-            self.scheduler.find_time(cumulative = 10)
+            self.scheduler.find_time(cumulative=10)
+
+    def test_satellites_list_to_satellites_name_list_empty_satellites_list(self):
+        self.assertTrue(self.scheduler.satellites_list_to_satellites_name_list([]) == [])
 
     def test_satellites_list_to_satellites_name_list_non_satellite(self):
         with self.assertRaises(IllegalArgumentException):
