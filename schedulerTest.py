@@ -220,6 +220,27 @@ class SchedulerTest(unittest.TestCase):
         self.assertTrue([visible_satellites[0].name == 'sat_1'])
         self.assertTrue([visible_satellites[1].name == 'sat_4'])
 
+    def test_find_max_visible_satellites_interval_non_cumulative_empty_satellites(self):
+
+        global testing_time
+        timezone = pytz.timezone("UTC")
+        start_time = timezone.localize(testing_time)
+
+        interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_non_cumulative(
+            [], None, start_time, 120, 30)
+
+        self.assertTrue(interval_start_time is None)
+        self.assertTrue(visible_satellites == [])
+
+    def test_find_max_visible_satellites_interval_non_cumulative_interval_duration_wrong_type(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_non_cumulative(
+                [None], None, start_time, 'a', 30)
+
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_non_cumulative(self, mock_find_visible_satellites_instance):
 
@@ -238,6 +259,18 @@ class SchedulerTest(unittest.TestCase):
 
         self.assertTrue(self.check_times_equal(interval_start_time.utc_datetime(), start_time + timedelta(minutes=30)))
         self.assertTrue(visible_satellites == ['sat_1', 'sat_2'])
+
+    def test_find_max_visible_satellites_interval_cumulative_empty_satellites(self):
+
+        global testing_time
+        timezone = pytz.timezone("UTC")
+        start_time = timezone.localize(testing_time)
+
+        interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_cumulative(
+            [], None, start_time, 120, 30)
+
+        self.assertTrue(interval_start_time is None)
+        self.assertTrue(visible_satellites == [])
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_cumulative(self, mock_find_visible_satellites_instance):
