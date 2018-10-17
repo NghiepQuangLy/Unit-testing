@@ -238,8 +238,35 @@ class SchedulerTest(unittest.TestCase):
             timezone = pytz.timezone("UTC")
             start_time = timezone.localize(testing_time)
 
-            interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_non_cumulative(
+            self.scheduler.find_max_visible_satellites_interval_non_cumulative(
                 [None], None, start_time, 'a', 30)
+
+    def test_find_max_visible_satellites_interval_non_cumulative_sub_interval_duration_wrong_type(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            self.scheduler.find_max_visible_satellites_interval_non_cumulative(
+                [None], None, start_time, 120, 'a')
+
+    def test_find_max_visible_satellites_interval_non_cumulative_interval_duration_out_of_range(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            self.scheduler.find_max_visible_satellites_interval_non_cumulative(
+                [None], None, start_time, 0, 30)
+
+    def test_find_max_visible_satellites_interval_non_cumulative_sub_interval_duration_out_of_range(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            self.scheduler.find_max_visible_satellites_interval_non_cumulative(
+                [None], None, start_time, 120, 0)
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_non_cumulative(self, mock_find_visible_satellites_instance):
@@ -271,6 +298,42 @@ class SchedulerTest(unittest.TestCase):
 
         self.assertTrue(interval_start_time is None)
         self.assertTrue(visible_satellites == [])
+
+    def test_find_max_visible_satellites_interval_cumulative_interval_duration_wrong_type(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            self.scheduler.find_max_visible_satellites_interval_cumulative(
+                [None], None, start_time, 'a', 30)
+
+    def test_find_max_visible_satellites_interval_cumulative_sub_interval_duration_wrong_type(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            self.scheduler.find_max_visible_satellites_interval_cumulative(
+                [None], None, start_time, 120, 'a')
+
+    def test_find_max_visible_satellites_interval_cumulative_interval_duration_out_of_range(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            self.scheduler.find_max_visible_satellites_interval_cumulative(
+                [None], None, start_time, 0, 30)
+
+    def test_find_max_visible_satellites_interval_cumulative_sub_interval_duration_out_of_range(self):
+        with self.assertRaises(IllegalArgumentException):
+            global testing_time
+            timezone = pytz.timezone("UTC")
+            start_time = timezone.localize(testing_time)
+
+            self.scheduler.find_max_visible_satellites_interval_cumulative(
+                [None], None, start_time, 120, 0)
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_cumulative(self, mock_find_visible_satellites_instance):
