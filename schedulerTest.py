@@ -129,16 +129,16 @@ class SchedulerTest(unittest.TestCase):
         time_copy = datetime.now()
         time = timezone.localize(time_copy)
 
-        mock_values = [[time, [Satellite('sat_1', None),
-                               Satellite('sat_2', None)]],
-                       [time + timedelta(hours=1), [Satellite('sat_1', None),
-                                                    Satellite('sat_2', None),
-                                                    Satellite('sat_3', None)]],
-                       [time + timedelta(hours=2), [Satellite('sat_1', None),
-                                                    Satellite('sat_4', None),
-                                                    Satellite('sat_7', None),
-                                                    Satellite('sat_10', None)]],
-                       [time + timedelta(hours=3), []]]
+        mock_values = [[time,                       [Satellite('sat_1', None),
+                                                     Satellite('sat_2', None)]],
+                       [time + timedelta(hours=1),  [Satellite('sat_1', None),
+                                                     Satellite('sat_2', None),
+                                                     Satellite('sat_3', None)]],
+                       [time + timedelta(hours=2),  [Satellite('sat_1', None),
+                                                     Satellite('sat_4', None),
+                                                     Satellite('sat_7', None),
+                                                     Satellite('sat_10', None)]],
+                       [time + timedelta(hours=3),  []]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
 
         max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=4,
@@ -176,16 +176,16 @@ class SchedulerTest(unittest.TestCase):
         timezone = pytz.timezone("UTC")
         time = timezone.localize(datetime.now())
 
-        mock_values = [[time, [Satellite('sat_1', None),
-                               Satellite('sat_2', None)]],
-                       [time + timedelta(hours=1), [Satellite('sat_1', None),
-                                                    Satellite('sat_2', None),
-                                                    Satellite('sat_3', None)]],
-                       [time + timedelta(hours=2), [Satellite('sat_1', None),
-                                                    Satellite('sat_4', None),
-                                                    Satellite('sat_7', None),
-                                                    Satellite('sat_10', None)]],
-                       [time + timedelta(hours=3), []]]
+        mock_values = [[time,                       [Satellite('sat_1', None),
+                                                     Satellite('sat_2', None)]],
+                       [time + timedelta(hours=1),  [Satellite('sat_1', None),
+                                                     Satellite('sat_2', None),
+                                                     Satellite('sat_3', None)]],
+                       [time + timedelta(hours=2),  [Satellite('sat_1', None),
+                                                     Satellite('sat_4', None),
+                                                     Satellite('sat_7', None),
+                                                     Satellite('sat_10', None)]],
+                       [time + timedelta(hours=3),  []]]
         mock_find_max_visible_satellites_interval_non_cumulative.side_effect = mock_values
 
         max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4,
