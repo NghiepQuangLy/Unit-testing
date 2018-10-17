@@ -5,5 +5,6 @@ test:
   - pipenv lock -r > requirements.txt
   - pip install -r requirements.txt
   - pip install coverage
+  - pip install pytz
   - coverage run schedulerTest.py
   - coverage report
