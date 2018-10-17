@@ -63,6 +63,9 @@ class Scheduler:
         try:
             timezone = pytz.timezone("UTC")
             start_time = timezone.localize(start_time)
+        except ValueError as e:
+            if str(e) != "Not naive datetime (tzinfo is already set)":
+                raise IllegalArgumentException
         except Exception:
             raise IllegalArgumentException
 
