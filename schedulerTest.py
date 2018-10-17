@@ -129,13 +129,20 @@ class SchedulerTest(unittest.TestCase):
         time_copy = datetime.now()
         time = timezone.localize(time_copy)
 
-        mock_values = [[time, [Satellite('sat_1', None), Satellite('sat_2', None)]],
-                       [time + timedelta(hours=1), [Satellite('sat_1', None), Satellite('sat_2', None), Satellite('sat_3', None)]],
-                       [time + timedelta(hours=2), [Satellite('sat_1', None), Satellite('sat_4', None), Satellite('sat_7', None), Satellite('sat_10', None)]],
-                       [time + timedelta(hours=3), []]]
+        mock_values = [[time + timedelta(hours=0),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_2',  None)]],
+                       [time + timedelta(hours=1),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_2',  None),
+                                                     Satellite('sat_3',  None)]],
+                       [time + timedelta(hours=2),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_4',  None),
+                                                     Satellite('sat_7',  None),
+                                                     Satellite('sat_10', None)]],
+                       [time + timedelta(hours=3),  []]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
 
-        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=4, cumulative=True)
+        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=4,
+                                                                               cumulative=True)
 
         self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=2)))
         self.assertTrue(max_interval_satellites == ['sat_1', 'sat_4', 'sat_7', 'sat_10'])
@@ -146,13 +153,20 @@ class SchedulerTest(unittest.TestCase):
         timezone = pytz.timezone("UTC")
         time = timezone.localize(datetime.now())
 
-        mock_values = [[time, [Satellite('sat_1', None), Satellite('sat_2', None)]],
-                       [time + timedelta(hours=1), [Satellite('sat_1', None), Satellite('sat_2', None), Satellite('sat_3', None)]],
-                       [time + timedelta(hours=2), [Satellite('sat_1', None), Satellite('sat_4', None), Satellite('sat_7', None), Satellite('sat_10', None)]],
-                       [time + timedelta(hours=3), []]]
+        mock_values = [[time + timedelta(hours=0),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_2',  None)]],
+                       [time + timedelta(hours=1),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_2',  None),
+                                                     Satellite('sat_3',  None)]],
+                       [time + timedelta(hours=2),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_4',  None),
+                                                     Satellite('sat_7',  None),
+                                                     Satellite('sat_10', None)]],
+                       [time + timedelta(hours=3),  []]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
 
-        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4, cumulative=True)
+        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4,
+                                                                               cumulative=True)
 
         self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=2)))
         self.assertTrue(max_interval_satellites == ['sat_1', 'sat_4', 'sat_7', 'sat_10'])
@@ -163,13 +177,20 @@ class SchedulerTest(unittest.TestCase):
         timezone = pytz.timezone("UTC")
         time = timezone.localize(datetime.now())
 
-        mock_values = [[time, [Satellite('sat_1', None), Satellite('sat_2', None)]],
-                       [time + timedelta(hours=1), [Satellite('sat_1', None), Satellite('sat_2', None), Satellite('sat_3', None)]],
-                       [time + timedelta(hours=2), [Satellite('sat_1', None), Satellite('sat_4', None), Satellite('sat_7', None), Satellite('sat_10', None)]],
-                       [time + timedelta(hours=3), []]]
+        mock_values = [[time + timedelta(hours=0),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_2',  None)]],
+                       [time + timedelta(hours=1),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_2',  None),
+                                                     Satellite('sat_3',  None)]],
+                       [time + timedelta(hours=2),  [Satellite('sat_1',  None),
+                                                     Satellite('sat_4',  None),
+                                                     Satellite('sat_7',  None),
+                                                     Satellite('sat_10', None)]],
+                       [time + timedelta(hours=3),  []]]
         mock_find_max_visible_satellites_interval_non_cumulative.side_effect = mock_values
 
-        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4, cumulative=True)
+        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4,
+                                                                               cumulative=True)
 
         self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=2)))
         self.assertTrue(max_interval_satellites == ['sat_1', 'sat_4', 'sat_7', 'sat_10'])
@@ -183,7 +204,10 @@ class SchedulerTest(unittest.TestCase):
                            Satellite('sat_3', None),
                            Satellite('sat_4', None)]
 
-        mock_values = [TestingAlt(10), TestingAlt(-10), TestingAlt(-10), TestingAlt(10)]
+        mock_values = [TestingAlt(10),
+                       TestingAlt(-10),
+                       TestingAlt(-10),
+                       TestingAlt(10)]
         mock_get_altitude.side_effect = mock_values
 
         visible_satellites = self.scheduler.find_visible_satellites_instance(satellites_list, None, None)
@@ -197,13 +221,16 @@ class SchedulerTest(unittest.TestCase):
         timezone = pytz.timezone("UTC")
         start_time = timezone.localize(datetime(2018, 1, 1, 10, 0, 0))
 
-        mock_values = [['sat_1'], ['sat_1', 'sat_2']]
+        mock_values = [['sat_1'],
+                       ['sat_1', 'sat_2'],
+                       ['sat_2', 'sat_3'],
+                       ['sat_4']]
         mock_find_visible_satellites_instance.side_effect = mock_values
 
         interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_non_cumulative(
-            [None], None, start_time, 120, 60)
+            [None], None, start_time, 120, 30)
 
-        self.assertTrue(interval_start_time.utc_datetime() == start_time + timedelta(hours=1))
+        self.assertTrue(interval_start_time.utc_datetime() == start_time + timedelta(minutes=30))
         self.assertTrue(visible_satellites == ['sat_1', 'sat_2'])
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
@@ -212,14 +239,20 @@ class SchedulerTest(unittest.TestCase):
         timezone = pytz.timezone("UTC")
         start_time = timezone.localize(datetime(2018, 1, 1, 10, 0, 0))
 
-        mock_values = [['sat_1', 'sat_2'], ['sat_2', 'sat_3'], ['sat_4']]
+        mock_values = [['sat_1'],
+                       ['sat_1', 'sat_2'],
+                       ['sat_2', 'sat_3'],
+                       ['sat_4']]
         mock_find_visible_satellites_instance.side_effect = mock_values
 
         interval_start_time, visible_satellites = self.scheduler.find_max_visible_satellites_interval_cumulative(
-            [None], None, start_time, 120, 40)
+            [None], None, start_time, 120, 30)
+
+        visible_satellites.sort()
 
         self.assertTrue(interval_start_time.utc_datetime() == start_time)
-        self.assertTrue(len(visible_satellites) == 4)
+
+        self.assertTrue(visible_satellites == ['sat_1', 'sat_2', 'sat_3', 'sat_4'])
 
 
 if __name__ == "__main__":
