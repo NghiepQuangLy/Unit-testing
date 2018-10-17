@@ -214,3 +214,8 @@ pip-selfcheck.json
 # End of https://www.gitignore.io/api/python,pycharm
 
 \.DS_Store
+\deltat.data
+\deltat.preds
+\Leap_second.dat
+\visual.txt
+\stations.txt
