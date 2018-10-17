@@ -172,8 +172,8 @@ class SchedulerTest(unittest.TestCase):
 
         interval_start_time, visible_sats = self.scheduler.find_max_visible_satellites_interval_non_cumulative(
             [None], None, start_time, 120, 60)
-        assert(interval_start_time.utc_datetime() == start_time + timedelta(hours=1))
-        assert(visible_sats == ['sat_1', 'sat_2'])
+        self.assertTrue(interval_start_time.utc_datetime() == start_time + timedelta(hours=1))
+        self.assertTrue(visible_sats == ['sat_1', 'sat_2'])
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_cumulative(self, mock_find_visible_satellites_instance):
