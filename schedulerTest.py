@@ -99,7 +99,7 @@ class SchedulerTest(unittest.TestCase):
         with self.assertRaises(IllegalArgumentException):
             self.scheduler.find_time(location=(0, 200))
 
-    def test_find_time_cumulative_non_boolean(self):
+    def test_find_time_cumulative_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
             self.scheduler.find_time(cumulative=10)
 
