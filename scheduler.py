@@ -461,8 +461,8 @@ class Satellite:
 
 if __name__ == "__main__":
     a = Scheduler()
-    b, c = a.find_time(duration = 60, sample_interval = 20, cumulative = True)
-    d, e = a.find_time(duration = 60, sample_interval = 20, cumulative = False)
+    # b, c = a.find_time(duration = 60, sample_interval = 20, cumulative = True)
+    # d, e = a.find_time(duration = 60, sample_interval = 20, cumulative = False)
 
     b, c = a.find_time(start_time=datetime.now() + timedelta(minutes=0), n_windows=1, duration=60, cumulative=True)
     d, e = a.find_time(start_time=datetime.now() + timedelta(minutes=0), n_windows=1, duration=60, cumulative=False)

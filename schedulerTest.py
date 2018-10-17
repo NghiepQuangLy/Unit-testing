@@ -25,18 +25,15 @@ class SatelliteTest(unittest.TestCase):
         self.assertFalse(self.satellite.is_visible(-10))
 
 
-class Alt:
-    """ ??? """
+class TestingAlt:
+    """ Class to allow for `.degree` in testing. """
 
     def __init__(self, alt):
         self.degrees = alt
 
 
 class SchedulerTest(unittest.TestCase):
-    """
-    Tests for the scheduler class. Add more tests
-    to test the code that you write.
-    """
+    """ Tests for the scheduler class. """
 
     def setUp(self):
         self.scheduler = Scheduler()
@@ -44,6 +41,7 @@ class SchedulerTest(unittest.TestCase):
     def test_its_alive(self):
         (stime, satellites) = self.scheduler.find_time()
         self.assertTrue(type(stime) == type(datetime.now()))
+        self.assertTrue(len(satellites) > 0)
 
     def test_find_time_start_time_wrong_type(self):
         with self.assertRaises(IllegalArgumentException):
@@ -122,10 +120,10 @@ class SchedulerTest(unittest.TestCase):
                            Satellite('sat_2', None),
                            Satellite('sat_3', None),
                            Satellite('sat_4', None)]
-        mock_get_altitude.side_effect = [Alt(10), Alt(-10), Alt(-10), Alt(10)]
+        mock_get_altitude.side_effect = [TestingAlt(10), TestingAlt(-10), TestingAlt(-10), TestingAlt(10)]
         visible_satellites = self.scheduler.find_visible_satellites_instance(satellites_list, None, None)
-        assert([visible_satellites[0].name == 'sat_1'])
-        assert([visible_satellites[1].name == 'sat_4'])
+        self.assertTrue([visible_satellites[0].name == 'sat_1'])
+        self.assertTrue([visible_satellites[1].name == 'sat_4'])
 
     @patch.object(Scheduler, "find_visible_satellites_instance")
     def test_find_max_visible_satellites_interval_non_cumulative(self, mock_find_visible_satellites_instance):
@@ -148,8 +146,8 @@ class SchedulerTest(unittest.TestCase):
 
         interval_start_time, visible_sats = self.scheduler.find_max_visible_satellites_interval_cumulative(
             [None], None, start_time, 120, 60)
-        assert(interval_start_time.utc_datetime() == start_time)
-        assert(len(visible_sats) == 3)
+        self.assertTrue(interval_start_time.utc_datetime() == start_time)
+        self.assertTrue(len(visible_sats) == 3)
 
 
 if __name__ == "__main__":
