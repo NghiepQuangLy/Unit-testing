@@ -125,14 +125,15 @@ class SchedulerTest(unittest.TestCase):
     @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
     def test_find_time_cumulative(self, mock_find_max_visible_satellites_interval_cumulative):
         timezone = pytz.timezone("UTC")
-        time = timezone.localize(datetime.now())
+        time_copy = datetime.now()
+        time = timezone.localize(time_copy)
         mock_values = [[time,[Satellite('sat_1',None),
                               Satellite('sat_2', None)]],
                        [time,[Satellite('sat_1', None),
                               Satellite('sat_2', None),
                               Satellite('sat_3', None)]]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
-        max_interval_start,max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=2,cumulative=True)
+        max_interval_start,max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=2, cumulative=True)
         self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=1)))
         self.assertTrue(len(max_interval_satellites) == 3)
 
