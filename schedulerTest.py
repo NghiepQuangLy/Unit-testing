@@ -129,19 +129,23 @@ class SchedulerTest(unittest.TestCase):
         time_copy = datetime.now()
         time = timezone.localize(time_copy)
 
-        mock_values = [[time,                       [Satellite('sat_1',None),
-                                                     Satellite('sat_2', None)]],
-                       [time + timedelta(hours=1),  [Satellite('sat_1', None),
-                                                     Satellite('sat_2', None),
-                                                     Satellite('sat_3', None)]],
-                       [time + timedelta(hours=2),  [Satellite('sat_4', None)]],
-                       [time + timedelta(hours=3),  []]]
+        mock_values = [[time, [Satellite('sat_1', None),
+                               Satellite('sat_2', None)]],
+                       [time + timedelta(hours=1), [Satellite('sat_1', None),
+                                                    Satellite('sat_2', None),
+                                                    Satellite('sat_3', None)]],
+                       [time + timedelta(hours=2), [Satellite('sat_1', None),
+                                                    Satellite('sat_4', None),
+                                                    Satellite('sat_7', None),
+                                                    Satellite('sat_10', None)]],
+                       [time + timedelta(hours=3), []]]
         mock_find_max_visible_satellites_interval_cumulative.side_effect = mock_values
 
-        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=2, cumulative=True)
+        max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time_copy, n_windows=4,
+                                                                               cumulative=True)
 
-        self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=1)))
-        self.assertTrue(max_interval_satellites == ['sat_1', 'sat_2', 'sat_3'])
+        self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=2)))
+        self.assertTrue(max_interval_satellites == ['sat_1', 'sat_4', 'sat_7', 'sat_10'])
 
     @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
     def test_find_time_cumulative_non_naive_time(self, mock_find_max_visible_satellites_interval_cumulative):
@@ -174,18 +178,21 @@ class SchedulerTest(unittest.TestCase):
 
         mock_values = [[time, [Satellite('sat_1', None),
                                Satellite('sat_2', None)]],
-                       [time, [Satellite('sat_1', None),
-                               Satellite('sat_2', None)]],
-                       [time, [Satellite('sat_3', None),
-                               Satellite('sat_4', None)]],
-                       [time, []]]
+                       [time + timedelta(hours=1), [Satellite('sat_1', None),
+                                                    Satellite('sat_2', None),
+                                                    Satellite('sat_3', None)]],
+                       [time + timedelta(hours=2), [Satellite('sat_1', None),
+                                                    Satellite('sat_4', None),
+                                                    Satellite('sat_7', None),
+                                                    Satellite('sat_10', None)]],
+                       [time + timedelta(hours=3), []]]
         mock_find_max_visible_satellites_interval_non_cumulative.side_effect = mock_values
 
         max_interval_start, max_interval_satellites = self.scheduler.find_time(start_time=time, n_windows=4,
                                                                                cumulative=True)
 
-        self.assertTrue(self.check_times_equal(max_interval_start, time))
-        self.assertTrue(max_interval_satellites == ['sat_1', 'sat_2'])
+        self.assertTrue(self.check_times_equal(max_interval_start, time + timedelta(hours=2)))
+        self.assertTrue(max_interval_satellites == ['sat_1', 'sat_4', 'sat_7', 'sat_10'])
 
 
     @patch.object(Satellite, "get_altitude")
