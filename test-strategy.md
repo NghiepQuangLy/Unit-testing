@@ -23,3 +23,9 @@ satellite data to remove the need for some calls to the _Skyfield_ library and a
 (_Celestrak NORAD_ in this case). However the _Skyfield_ library is to be called at least once while testing the
 system overall (i.e. running `find_time()`). 
 
+**Equivalence Partitioning**
+
+Treating the program as as black boxes, partitions for equivalence partitioning to be considered for testing will 
+only be considered to be either valid or invalid. In this way, all invalid inputs to a function are subsumed by
+exception testing and all valid inputs are then subsumed by functional correctness tests.
+
