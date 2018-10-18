@@ -142,6 +142,7 @@ class SchedulerTest(unittest.TestCase):
 
         satellites_list = self.scheduler.get_all_satellites(satellites_url)
 
+        self.assertTrue(len(satellites_list) == 3)
         self.assertTrue(satellites_list[0].name == 'sat_1')
         self.assertTrue(satellites_list[1].name == 'sat_2')
         self.assertTrue(satellites_list[2].name == 'sat_3')
