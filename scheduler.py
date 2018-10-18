@@ -221,17 +221,15 @@ class Scheduler:
         """
 
         """ START Precondition Handling """
-        """
-        if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
-            raise IllegalArgumentException
-
-        if str(type(time_of_measurement)) != "<class 'skyfield.timelib.Time'>":
-            raise IllegalArgumentException
+        # if str(type(observer_location)) != "<class 'skyfield.toposlib.Topos'>":
+        #     raise IllegalArgumentException
+        #
+        # if str(type(time_of_measurement)) != "<class 'skyfield.timelib.Time'>":
+        #     raise IllegalArgumentException
 
         for satellite in satellites_list:
             if type(satellite) is not Satellite:
                 raise IllegalArgumentException
-        """
         """ END Precondition Handling """
 
         # if the satellites list is empty then we return an empty array

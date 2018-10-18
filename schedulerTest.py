@@ -197,6 +197,14 @@ class SchedulerTest(unittest.TestCase):
         self.assertTrue(self.check_times_equal(max_interval_start, non_naive_testing_time + timedelta(hours=2)))
         self.assertTrue(max_interval_satellites == ['sat_1', 'sat_4', 'sat_7', 'sat_10'])
 
+    def test_find_visible_satellites_instance_non_satellite(self):
+        with self.assertRaises(IllegalArgumentException):
+            satellites_list = [Satellite('sat_1', None),
+                               Satellite('sat_2', None),
+                               'a',
+                               Satellite('sat_4', None)]
+
+            self.scheduler.find_visible_satellites_instance(satellites_list, None, None)
 
     @patch.object(Satellite, "get_altitude")
     def test_find_visible_satellites_instance(self, mock_get_altitude):
