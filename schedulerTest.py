@@ -3,7 +3,7 @@ from scheduler import Scheduler
 from scheduler import Satellite
 from scheduler import IllegalArgumentException
 from datetime import datetime, timedelta
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 import pytz
 
 
@@ -36,6 +36,11 @@ class TestingAlt:
     def __init__(self, alt):
         self.degrees = alt
 
+class TestingSatellite:
+    """ Class to allow for `.name` in testing. """
+
+    def __init__(self, name):
+        self.name = name
 
 class SchedulerTest(unittest.TestCase):
     """ Tests for the scheduler class. """
@@ -126,6 +131,18 @@ class SchedulerTest(unittest.TestCase):
     def test_get_all_satellites_invalid_url(self):
         with self.assertRaises(IllegalArgumentException):
             self.scheduler.get_all_satellites("invalid_url")
+
+    @patch("skyfield.api.load.tle", return_value={'sat_1': TestingSatellite('sat_1'),
+                                                  'sat_2': TestingSatellite('sat_2'),
+                                                  'sat_3': TestingSatellite('sat_3'),
+                                                  'sat_4': TestingSatellite('sat_2')})
+    def test_get_all_satellites(self, mock_skyfield_load_tle):
+
+        satellites_url = MagicMock()
+
+        satellites_list = self.scheduler.get_all_satellites(satellites_url)
+
+        self.assertTrue(len(satellites_list) == 3)
 
     @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
     def test_find_time_cumulative_naive_time(self, mock_find_max_visible_satellites_interval_cumulative):
