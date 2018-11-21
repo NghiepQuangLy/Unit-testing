@@ -194,7 +194,7 @@ class SchedulerTest(unittest.TestCase):
         self.assertTrue(self.check_times_equal(max_interval_start, non_naive_testing_time + timedelta(hours=2)))
         self.assertTrue(max_interval_satellites == ['sat_1', 'sat_4', 'sat_7', 'sat_10'])
 
-    @patch.object(Scheduler, "find_max_visible_satellites_interval_cumulative")
+    @patch.object(Scheduler, "find_max_visible_satellites_interval_non_cumulative")
     def test_find_time_non_cumulative(self, mock_find_max_visible_satellites_interval_non_cumulative):
 
         global non_naive_testing_time
